@@ -1,0 +1,96 @@
+@font-face {
+  font-family: 'NunitoSans';
+  src: url('../assets/fonts/NunitoSans-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+
+.wrapper {
+  width: 100vw;
+  min-height: 100dvh;
+  background-image: url("../assets/img/Backgraund.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.form {
+  border-right: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-7));
+  height: 100vh;
+  max-width: 450px;
+  padding-top: 1%;
+  border-radius: 0;
+  padding-left: var(--mantine-spacing-md);
+  padding-right: var(--mantine-spacing-md);
+
+  @media (max-width: var(--mantine-breakpoint-sm)) {
+    max-width: 100%;
+    
+  }
+}
+
+.inputLogin input{
+  border-radius: 5px !important;
+  border: 2px solid #3b3b3b82 !important;
+  background: rgba(46, 46, 46, 0.00) !important;
+  border-radius: 7px !important;
+}
+
+.inputPassword input{
+  border-radius: 5px !important;
+  border: 2px solid #3b3b3b82 !important;
+  background: rgba(46, 46, 46, 0.00) !important;
+  border-radius: 7px !important;
+}
+  
+
+.title {
+  color: #000;
+  font-family: "NunitoSans";
+  font-size: 40px;
+  font-style: normal;
+  font-weight: normal;
+  line-height: normal;
+  text-align: center;
+}
+
+.subtitle {
+  color: #170707;
+  font-family: "Arial";
+  font-size: 14px;
+  font-style: solid;
+  font-weight: 300;
+  line-height: 16px;
+  text-align: center;
+}
+
+.buttonLogin {
+  background-color: #B13433 !important;
+  border-radius: 5px !important;
+  color: white !important;
+  
+}
+
+
+.logoCCF {
+  width: clamp(100px, 30vw, 180px);
+  height: auto;
+  aspect-ratio: 409/267;
+  padding-left: var(--mantine-spacing-md);
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.title {
+  margin-bottom: 2px;
+}
+
+.subtitle {
+  margin-top: 0;
+}
+
+.linkRegister {
+  color: #B13433 !important;
+}

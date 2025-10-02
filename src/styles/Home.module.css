@@ -1,0 +1,53 @@
+.mainContent {
+    margin-left: 300px; /* deixa espaço para a navbar fixa */
+    height: 100vh;      /* ocupa toda a altura da tela */
+    overflow-y: auto;   /* scroll só do conteúdo */
+    padding: 20px;      
+    margin-top: -5vw;/* opcional */
+  }
+  
+  .statsGrid {
+    margin-top: 0.1vw;
+    display: block;
+    justify-content: center;
+    align-items: center;
+    padding-left: 7vw;
+    padding-right: 7vw;
+    border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  }
+
+  .toolbar {
+    margin-top: 0.1vw;
+    display: block;
+    justify-content: center;
+    align-items: center;
+    padding-left: 7vw;
+    padding-right: 7vw;
+    border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  }
+  
+  /* Mobile: até 768px */
+  @media (max-width: 768px) {
+    .mainContent {
+      margin-left: 0;
+      margin-top: 0;
+      padding: 16px;
+      height: auto;
+      min-height: 100dvh;
+    }
+
+    .statsGrid,
+    .toolbar {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+  }
+
+  /* Tablet: até 992px */
+  @media (max-width: 992px) {
+    .statsGrid,
+    .toolbar {
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+  }
