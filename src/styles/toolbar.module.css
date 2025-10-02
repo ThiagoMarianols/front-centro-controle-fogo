@@ -1,0 +1,54 @@
+.mainContent {
+  margin-left: 300px; /* deixa espaço para a navbar fixa */
+  margin-top: -5vw;/* opcional */
+}
+
+.title {
+  font-size: 34px;
+  font-weight: 500;
+
+  @media (max-width: var(--mantine-breakpoint-sm)) {
+    font-size: 24px;
+  }
+}
+
+.description {
+  max-width: 600px;
+  margin: auto;
+
+  &::after {
+    content: '';
+    display: block;
+    background-color: #B13433;
+    width: 45px;
+    height: 2px;
+    margin-top: var(--mantine-spacing-sm);
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+.card {
+  border: 1px solid light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
+  text-align: center;
+}
+
+.cardTitle {
+  &::after {
+    content: '';
+    display: block;
+    background-color: #B13433;
+    width: 45px;
+    height: 2px;
+    margin-top: var(--mantine-spacing-sm);
+  }
+}
+
+/* Mobile: até sm */
+@media (max-width: var(--mantine-breakpoint-sm)) {
+  .mainContent {
+    margin-left: 0;
+    margin-top: 0;
+    padding: 0 16px;
+  }
+}
