@@ -8,6 +8,7 @@ import { MantineProvider } from '@mantine/core'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Login from './pages/Login.tsx'
 import Home from './pages/Home.tsx'
+import {RegistroOcorrencia} from './pages/RegistroOcorrencia.tsx'
 //
 //const router = createBrowserRouter([
 //  {
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
       {
         path: '/home',
         element: <Home />,
+      },	
+      {
+        path: '/registroOcorrencia',
+        element: <RegistroOcorrencia />,
       },
     ],
   },

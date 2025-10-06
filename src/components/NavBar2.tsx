@@ -6,7 +6,6 @@ import {
   IconDashboard,
   IconLogout,
   IconSettings,
-  IconSwitchHorizontal,
   IconMenu2,
   IconMenuDeep
 } from '@tabler/icons-react';
@@ -17,8 +16,8 @@ import { UserInfo } from './UserInfo';
 
 const tabs = {
   account: [
-    { link: '', label: 'Home', icon: IconHome },
-    { link: '', label: 'Cadastrar Ocorrência', icon: IconPencil },
+    { link: '', label: 'Início', icon: IconHome },
+    { link: '', label: 'Registrar Ocorrência', icon: IconPencil },
     { link: '', label: 'Relatórios', icon: IconReport },
     { link: '', label: 'Dashboard', icon: IconDashboard },
     { link: '', label: 'Configurações', icon: IconSettings },
@@ -44,7 +43,6 @@ export function NavBar2() {
       onClick={(event) => {
         event.preventDefault();
         setActive(item.label);
-        // Fecha o menu no mobile após clicar
         setIsOpen(false);
       }}
     >
@@ -55,7 +53,6 @@ export function NavBar2() {
 
   return (
     <>
-      {/* Botão hamburger para mobile (aparece apenas quando fechado) */}
       {!isOpen && (
         <button
           type="button"
@@ -72,7 +69,6 @@ export function NavBar2() {
       {isOpen && <div className={classes.backdrop} onClick={() => setIsOpen(false)} />}
 
       <nav className={`${classes.navbar} ${isOpen ? classes.open : ''}`}>
-        {/* Botão de fechar dentro do menu (visível no mobile) */}
         <button
           type="button"
           aria-label={'Fechar menu'}
