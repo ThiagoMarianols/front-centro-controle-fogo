@@ -9,30 +9,32 @@ import {
   IconMenu2,
   IconMenuDeep
 } from '@tabler/icons-react';
-import { SegmentedControl} from '@mantine/core';
+import { SegmentedControl } from '@mantine/core';
 import classes from '../styles/NavBar2.module.css';
 import logoCCF from '../assets/img/LogoCCF3.png';
 import { UserInfo } from './UserInfo';
+import { useNavigate } from 'react-router-dom';
 
 const tabs = {
   account: [
-    { link: '', label: 'Início', icon: IconHome },
-    { link: '', label: 'Registrar Ocorrência', icon: IconPencil },
-    { link: '', label: 'Relatórios', icon: IconReport },
-    { link: '', label: 'Dashboard', icon: IconDashboard },
-    { link: '', label: 'Configurações', icon: IconSettings },
+    { link: '/home', label: 'Início', icon: IconHome },
+    { link: '/registroOcorrencia', label: 'Registrar Ocorrência', icon: IconPencil },
+    { link: '/relatorios', label: 'Relatórios', icon: IconReport },
+    { link: '/dashboard', label: 'Dashboard', icon: IconDashboard },
+    { link: '/configuracoes', label: 'Configurações', icon: IconSettings },
   ],
   general: [
-    { link: '', label: 'Cadastrar Ocorrências', icon: IconPencil },
-    { link: '', label: 'Cadastrar Tipos Ocorrências', icon: IconPencil },
-    { link: '', label: 'Cadastrar UR', icon: IconPencil },
+    { link: '/cadastros/ocorrencias', label: 'Cadastrar Ocorrências', icon: IconPencil },
+    { link: '/cadastros/tipos-ocorrencias', label: 'Cadastrar Tipos Ocorrências', icon: IconPencil },
+    { link: '/cadastros/ur', label: 'Cadastrar UR', icon: IconPencil },
   ],
 };
 
 export function NavBar2() {
   const [section, setSection] = useState<'account' | 'general'>('account');
-  const [active, setActive] = useState('Home');
+  const [active, setActive] = useState('Início');
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   const links = tabs[section].map((item) => (
     <a
@@ -44,6 +46,7 @@ export function NavBar2() {
         event.preventDefault();
         setActive(item.label);
         setIsOpen(false);
+        window.location.href = item.link; // redireciona corretamente
       }}
     >
       <item.icon className={classes.linkIcon} stroke={1.5} />
@@ -65,13 +68,12 @@ export function NavBar2() {
         </button>
       )}
 
-      {/* Backdrop para mobile */}
       {isOpen && <div className={classes.backdrop} onClick={() => setIsOpen(false)} />}
 
       <nav className={`${classes.navbar} ${isOpen ? classes.open : ''}`}>
         <button
           type="button"
-          aria-label={'Fechar menu'}
+          aria-label="Fechar menu"
           aria-expanded={isOpen}
           className={`${classes.closeButton} ${isOpen ? '' : classes.hidden}`}
           onClick={() => setIsOpen(false)}
@@ -80,7 +82,7 @@ export function NavBar2() {
         </button>
 
         <div>
-          <img src={logoCCF} alt="Logo" className={classes.logoCCF}/>
+          <img src={logoCCF} alt="Logo" className={classes.logoCCF} />
           <SegmentedControl
             value={section}
             onChange={(value: any) => setSection(value)}
@@ -96,8 +98,17 @@ export function NavBar2() {
         <div className={classes.navbarMain}>{links}</div>
 
         <div className={classes.footer}>
-            <UserInfo />
-          <a href="#" className={classes.link} onClick={(event) => event.preventDefault()}>
+          <UserInfo />
+          <a
+            href="/login"
+            className={classes.link}
+            onClick={(event) => {
+              event.preventDefault();
+              // lógica de logout pode ser adicionada aqui (ex.: limpar tokens)
+              setIsOpen(false);
+              navigate('/login');
+            }}
+          >
             <IconLogout className={classes.linkIcon} stroke={1.5} />
             <span>Sair</span>
           </a>
@@ -106,3 +117,4 @@ export function NavBar2() {
     </>
   );
 }
+

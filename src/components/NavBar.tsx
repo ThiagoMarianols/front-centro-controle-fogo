@@ -15,11 +15,11 @@ import classes from '../styles/NavBar.module.css';
 import { UserInfo } from './UserInfo';
 
 const data = [
-  { link: '', label: 'Home', icon: IconHome },
-  { link: '', label: 'Cadastros', icon: IconPencil },
-  { link: '', label: 'Relatórios', icon: IconReport },
-  { link: '', label: 'Dashboard', icon: IconDashboard },
-  { link: '', label: 'Configurações', icon: IconSettings },
+  { link: '/Home/', label: 'Home', icon: IconHome },
+  { link: '/RegistroOcorrencia', label: 'Cadastros', icon: IconPencil },
+  { link: '/Relatorios', label: 'Relatórios', icon: IconReport },
+  { link: '/Dashboard', label: 'Dashboard', icon: IconDashboard },
+  { link: '/Configuracoes', label: 'Configurações', icon: IconSettings },
 ];
 
 export function NavBar() {
