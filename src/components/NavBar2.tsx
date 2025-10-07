@@ -22,11 +22,14 @@ const tabs = {
     { link: '/relatorios', label: 'Relatórios', icon: IconReport },
     { link: '/dashboard', label: 'Dashboard', icon: IconDashboard },
     { link: '/configuracoes', label: 'Configurações', icon: IconSettings },
+    { link: '/Users', label: 'Usuário', icon: IconPencil },
   ],
   general: [
     { link: '/cadastros/ocorrencias', label: 'Cadastrar Ocorrências', icon: IconPencil },
     { link: '/cadastros/tipos-ocorrencias', label: 'Cadastrar Tipos Ocorrências', icon: IconPencil },
     { link: '/cadastros/ur', label: 'Cadastrar UR', icon: IconPencil },
+    { link: '/CadastroUsuario', label: 'Cadastrar Usuário', icon: IconPencil },
+
   ],
 };
 

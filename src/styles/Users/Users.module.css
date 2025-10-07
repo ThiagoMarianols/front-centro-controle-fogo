@@ -1,0 +1,7 @@
+.mainContent {
+    margin-left: 300px; /* deixa espaço para a navbar fixa */
+    height: 100vh;      /* ocupa toda a altura da tela */
+    overflow-y: auto;   /* scroll só do conteúdo */
+    padding: 20px;      
+    margin-top: -5vw;/* opcional */
+  }
