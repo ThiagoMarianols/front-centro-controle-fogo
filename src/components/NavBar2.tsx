@@ -3,6 +3,7 @@ import {
   IconHome,
   IconReport,
   IconPencil,
+  IconUsers,
   IconDashboard,
   IconLogout,
   IconSettings,
@@ -22,7 +23,7 @@ const tabs = {
     { link: '/relatorios', label: 'Relatórios', icon: IconReport },
     { link: '/dashboard', label: 'Dashboard', icon: IconDashboard },
     { link: '/configuracoes', label: 'Configurações', icon: IconSettings },
-    { link: '/Users', label: 'Usuário', icon: IconPencil },
+    { link: '/Users', label: 'Usuário', icon: IconUsers },
   ],
   general: [
     { link: '/cadastros/ocorrencias', label: 'Cadastrar Ocorrências', icon: IconPencil },

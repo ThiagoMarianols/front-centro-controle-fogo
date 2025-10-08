@@ -1,50 +1,40 @@
 import { IconPencil, IconTrash } from '@tabler/icons-react';
-import { ActionIcon, Anchor, Avatar, Badge, Group, Table, Text } from '@mantine/core';
+import { ActionIcon, Anchor, Badge, Group, Table, Text } from '@mantine/core';
 
 const data = [
   {
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-1.png',
-    name: 'Robert Wolfkisser',
-    job: 'Engineer',
-    email: 'rob_wolf@gmail.com',
-    phone: '+44 (452) 886 09 12',
+    name: 'Robert Jonhson',
+    cargo: 'Engineer',
+    email: 'robert.johnson@centrocontrolefogo.com.br',
+    matricula: '8628965',
   },
   {
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-7.png',
-    name: 'Jill Jailbreaker',
-    job: 'Engineer',
-    email: 'jj@breaker.com',
-    phone: '+44 (934) 777 12 76',
+    name: 'Fernando Silva',
+    cargo: 'Engineer',
+    email: 'fernando.silva@centrocontrolefogo.com.br',
+    matricula: '8628954',
   },
   {
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-2.png',
-    name: 'Henry Silkeater',
-    job: 'Designer',
-    email: 'henry@silkeater.io',
-    phone: '+44 (901) 384 88 34',
+    name: 'Carlos Costa',
+    cargo: 'Designer',
+    email: 'carlos.costa@centrocontrolefogo.com.br',
+    matricula: '8628474',
   },
   {
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-3.png',
-    name: 'Bill Horsefighter',
-    job: 'Designer',
-    email: 'bhorsefighter@gmail.com',
-    phone: '+44 (667) 341 45 22',
+    name: 'Carlos Marques',
+    cargo: 'Designer',
+    email: 'carlos.marques@centrocontrolefogo.com.br',
+    matricula: '8628474',
   },
   {
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-10.png',
-    name: 'Jeremy Footviewer',
-    job: 'Manager',
-    email: 'jeremy@foot.dev',
-    phone: '+44 (881) 245 65 65',
+    name: 'Jaciel Marques',
+    cargo: 'Manager',
+    email: 'jaciel.marques@centrocontrolefogo.com.br',
+    matricula: '8628441',
   },
 ];
 
-const jobColors: Record<string, string> = {
+const cargoColors: Record<string, string> = {
   engineer: 'blue',
   manager: 'cyan',
   designer: 'pink',
@@ -55,7 +45,6 @@ export function UserList() {
     <Table.Tr key={item.name}>
       <Table.Td>
         <Group gap="sm">
-          <Avatar size={30} src={item.avatar} radius={30} />
           <Text fz="sm" fw={500}>
             {item.name}
           </Text>
@@ -63,17 +52,17 @@ export function UserList() {
       </Table.Td>
 
       <Table.Td>
-        <Badge color={jobColors[item.job.toLowerCase()]} variant="light">
-          {item.job}
+        <Badge color={cargoColors[item.cargo.toLowerCase()]} variant="light">
+          {item.cargo}
         </Badge>
       </Table.Td>
       <Table.Td>
         <Anchor component="button" size="sm">
           {item.email}
         </Anchor>
-      </Table.Td>
+      </Table.Td> 
       <Table.Td>
-        <Text fz="sm">{item.phone}</Text>
+        <Text fz="sm">{item.matricula}</Text>
       </Table.Td>
       <Table.Td>
         <Group gap={0} justify="flex-end">
@@ -93,10 +82,10 @@ export function UserList() {
       <Table verticalSpacing="sm">
         <Table.Thead>
           <Table.Tr>
-            <Table.Th>Employee</Table.Th>
-            <Table.Th>Job title</Table.Th>
+            <Table.Th>Nome de Usuario</Table.Th>
+            <Table.Th>cargo</Table.Th>
             <Table.Th>Email</Table.Th>
-            <Table.Th>Phone</Table.Th>
+            <Table.Th>Matricula</Table.Th>
             <Table.Th />
           </Table.Tr>
         </Table.Thead>
