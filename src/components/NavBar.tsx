@@ -11,8 +11,7 @@ import classes from '../styles/NavBar.module.css';
 import { UserInfo } from './UserInfo';
 import logoCCF from '../assets/img/LogoCCF3.png';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
+import { useNavigate, Link } from 'react-router-dom';
 const mockdata = [
   { label: 'Registrar Ocorrencia', icon: IconNotes, link: '/registroOcorrencia'  },
   { label: 'Relatórios', icon: IconFileAnalytics, link: 'administracao/Relatorios' },
@@ -23,7 +22,6 @@ const mockdata = [
     initiallyOpened: true,
     links: [
       { label: 'Tipos Ocorrencias', link: '/administracao/TipoOcorrencia' },
-      { label: 'RPA', link: '/administracao/RPA' },
       { label: 'Batalhão', link: '/administracao/Batalhao' },
       { label: 'Usuários', link: '/administracao/Users' },
     ],
@@ -52,9 +50,9 @@ export function NavBar2() {
       <nav className={`${classes.navbar} ${isOpen ? 'open' : ''}`}>
         <div className={classes.header}>
           <Group justify="space-between">
-            <a href="/home">
-            <img src={logoCCF} alt="Logo" style={{ width: 60 }} />
-            </a>
+            <Link to="/">
+              <img src={logoCCF} alt="Logo" style={{ width: 60 }} />
+            </Link>
           </Group>
         </div>
 
