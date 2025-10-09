@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import '@mantine/core/styles.css';
-import { NavBar2 } from './components/NavBar2';
+import { NavBar2 } from './components/NavBar';
 
 
 
