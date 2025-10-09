@@ -1,0 +1,8 @@
+.mainContent {
+    margin-left: 18.75em;
+    min-height: 100dvh;
+    overflow-y: auto;
+    padding: 1.5em;
+    display: flex;
+    justify-content: center;
+  }

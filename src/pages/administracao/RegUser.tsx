@@ -1,4 +1,4 @@
-import classes from '../../styles/cadastros/RegUser.module.css';
+import classes from '../../styles/administracao/RegUser.module.css';
 import {  
   Select,
   TextInput,

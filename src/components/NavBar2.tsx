@@ -1,124 +1,94 @@
-import { useState } from 'react';
 import {
-  IconHome,
-  IconReport,
-  IconPencil,
-  IconUsers,
-  IconDashboard,
+  IconAdjustments,
+  IconCalendarStats,
+  IconFileAnalytics,
+  IconGauge,
+  IconLock,
+  IconNotes,
+  IconPresentationAnalytics,
   IconLogout,
-  IconSettings,
-  IconMenu2,
-  IconMenuDeep
 } from '@tabler/icons-react';
-import { SegmentedControl } from '@mantine/core';
+import { Code, Group, ScrollArea } from '@mantine/core';
+import { LinksGroup } from './NavbarLinksGroup';
 import classes from '../styles/NavBar2.module.css';
-import logoCCF from '../assets/img/LogoCCF3.png';
 import { UserInfo } from './UserInfo';
+import logoCCF from '../assets/img/LogoCCF3.png';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const tabs = {
-  account: [
-    { link: '/home', label: 'Início', icon: IconHome },
-    { link: '/registroOcorrencia', label: 'Registrar Ocorrência', icon: IconPencil },
-    { link: '/relatorios', label: 'Relatórios', icon: IconReport },
-    { link: '/dashboard', label: 'Dashboard', icon: IconDashboard },
-    { link: '/configuracoes', label: 'Configurações', icon: IconSettings },
-    { link: '/Users', label: 'Usuário', icon: IconUsers },
-  ],
-  general: [
-    { link: '/cadastros/ocorrencias', label: 'Cadastrar Ocorrências', icon: IconPencil },
-    { link: '/cadastros/tipos-ocorrencias', label: 'Cadastrar Tipos Ocorrências', icon: IconPencil },
-    { link: '/cadastros/ur', label: 'Cadastrar UR', icon: IconPencil },
-    { link: '/CadastroUsuario', label: 'Cadastrar Usuário', icon: IconPencil },
-
-  ],
-};
+const mockdata = [
+  { label: 'Registrar Ocorrencia', icon: IconNotes, link: '/registroOcorrencia'  },
+  { label: 'Relatórios', icon: IconFileAnalytics, link: 'administracao/Relatorios' },
+  { label: 'Dashboard', icon: IconGauge, link: '/dashboard' },
+  {
+    label: 'Administração',
+    icon: IconNotes,
+    initiallyOpened: true,
+    links: [
+      { label: 'Tipos Ocorrencias', link: '/administracao/TipoOcorrencia' },
+      { label: 'RPA', link: '/administracao/RPA' },
+      { label: 'Batalhão', link: '/administracao/Batalhao' },
+      { label: 'Usuários', link: '/administracao/Users' },
+    ],
+  },
+  { label: 'Configurações', icon: IconAdjustments },
+];
 
 export function NavBar2() {
-  const [section, setSection] = useState<'account' | 'general'>('account');
-  const [active, setActive] = useState('Início');
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-
-  const links = tabs[section].map((item) => (
-    <a
-      className={classes.link}
-      data-active={item.label === active || undefined}
-      href={item.link}
-      key={item.label}
-      onClick={(event) => {
-        event.preventDefault();
-        setActive(item.label);
-        setIsOpen(false);
-        window.location.href = item.link; // redireciona corretamente
-      }}
-    >
-      <item.icon className={classes.linkIcon} stroke={1.5} />
-      <span>{item.label}</span>
-    </a>
-  ));
+  const links = mockdata.map((item) => <LinksGroup {...item} key={item.label} />);
 
   return (
     <>
-      {!isOpen && (
-        <button
-          type="button"
-          aria-label={isOpen ? 'Fechar menu' : 'Abrir menu'}
-          aria-expanded={isOpen}
-          className={classes.toggleButton}
-          onClick={() => setIsOpen(true)}
-        >
-          <IconMenu2 size={22} />
-        </button>
-      )}
+      {/* Botão para abrir o menu no mobile */}
+      <button
+        type="button"
+        aria-label="Abrir menu"
+        className={classes.toggleButton}
+        onClick={() => setIsOpen(true)}
+      />
 
+      {/* Backdrop para fechar ao clicar fora no mobile */}
       {isOpen && <div className={classes.backdrop} onClick={() => setIsOpen(false)} />}
 
-      <nav className={`${classes.navbar} ${isOpen ? classes.open : ''}`}>
+      <nav className={`${classes.navbar} ${isOpen ? 'open' : ''}`}>
+        <div className={classes.header}>
+          <Group justify="space-between">
+            <a href="/home">
+            <img src={logoCCF} alt="Logo" style={{ width: 60 }} />
+            </a>
+          </Group>
+        </div>
+
+        <ScrollArea className={classes.links}>
+          <div className={classes.linksInner}>{links}</div>
+        </ScrollArea>
+
+        {/* Botão para fechar no mobile */}
         <button
           type="button"
           aria-label="Fechar menu"
-          aria-expanded={isOpen}
-          className={`${classes.closeButton} ${isOpen ? '' : classes.hidden}`}
+          className={classes.closeButton}
           onClick={() => setIsOpen(false)}
-        >
-          <IconMenuDeep size={22} />
-        </button>
-
-        <div>
-          <img src={logoCCF} alt="Logo" className={classes.logoCCF} />
-          <SegmentedControl
-            value={section}
-            onChange={(value: any) => setSection(value)}
-            transitionTimingFunction="ease"
-            fullWidth
-            data={[
-              { label: 'Geral', value: 'account' },
-              { label: 'Cadastros', value: 'general' },
-            ]}
-          />
-        </div>
-
-        <div className={classes.navbarMain}>{links}</div>
+        />
 
         <div className={classes.footer}>
-          <UserInfo />
-          <a
-            href="/login"
-            className={classes.link}
-            onClick={(event) => {
-              event.preventDefault();
-              // lógica de logout pode ser adicionada aqui (ex.: limpar tokens)
+          <div className={classes.user}><UserInfo /></div>
+          <button
+            type="button"
+            aria-label="Sair"
+            className={classes.logout}
+            onClick={() => {
               setIsOpen(false);
               navigate('/login');
             }}
           >
             <IconLogout className={classes.linkIcon} stroke={1.5} />
             <span>Sair</span>
-          </a>
+          </button>
         </div>
       </nav>
     </>
   );
 }
-

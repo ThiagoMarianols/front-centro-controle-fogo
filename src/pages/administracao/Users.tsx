@@ -1,6 +1,6 @@
 import React from 'react'
 import { UserList } from '../../components/UserList'
-import classes from '../../styles/Users/Users.module.css'
+import classes from '../../styles/administracao/Users.module.css'
 import { Button } from '@mantine/core'
 import { useNavigate } from 'react-router-dom'
 

@@ -9,8 +9,12 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Login from './pages/Login.tsx'
 import Home from './pages/Home.tsx'
 import {RegistroOcorrencia} from './pages/RegistroOcorrencia.tsx'
-import { CadastroUsuario} from './pages/cadastros/RegUser.tsx'
-import Users from './pages/Users/Users.tsx'
+import { CadastroUsuario} from './pages/administracao/RegUser.tsx'
+import Users from './pages/administracao/Users.tsx'
+import RPA from './pages/administracao/RPA.tsx'
+import TipoOcorrencia from './pages/administracao/TipoOcorrencia.tsx'
+import Relatorios from './pages/Relatorios.tsx'
+
 //
 //const router = createBrowserRouter([
 //  {
@@ -31,22 +35,13 @@ const router = createBrowserRouter([
     path: '/',
     element: <App />,
     children: [
-      {
-        path: '/home',
-        element: <Home />,
-      },	
-      {
-        path: '/registroOcorrencia',
-        element: <RegistroOcorrencia />,
-      },
-      {
-        path: 'CadastroUsuario',
-        element: <CadastroUsuario />,
-      },
-      {
-        path: 'Users',
-        element: <Users />,
-      },
+      { path: '/home', element: <Home /> },
+      { path: '/registroOcorrencia', element: <RegistroOcorrencia /> },
+      { path: 'administracao/RPA', element: <RPA /> },
+      { path: 'administracao/CadastroUsuario', element: <CadastroUsuario /> },
+      { path: 'administracao/Users', element: <Users /> },
+      { path: 'administracao/TipoOcorrencia', element: <TipoOcorrencia /> },
+      { path: 'administracao/Relatorios', element: <Relatorios /> },
     ],
   },
   {
