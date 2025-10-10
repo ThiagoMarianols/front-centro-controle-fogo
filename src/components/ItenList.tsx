@@ -1,5 +1,14 @@
+import { useState } from 'react';
 import { IconPencil, IconTrash } from '@tabler/icons-react';
-import { ActionIcon, Anchor, Badge, Group, Table, Text } from '@mantine/core';
+import {
+  ActionIcon,
+  Anchor,
+  Badge,
+  Group,
+  Table,
+  Text,
+  Pagination,
+} from '@mantine/core';
 
 const data = [
   {
@@ -32,6 +41,7 @@ const data = [
     email: 'jaciel.marques@centrocontrolefogo.com.br',
     matricula: '8628441',
   },
+  
 ];
 
 const cargoColors: Record<string, string> = {
@@ -40,8 +50,16 @@ const cargoColors: Record<string, string> = {
   designer: 'pink',
 };
 
-export function UserList() {
-  const rows = data.map((item) => (
+export function ItenList() {
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 8;
+
+  // Exemplo simples de paginação
+  const start = (page - 1) * rowsPerPage;
+  const end = start + rowsPerPage;
+  const paginatedData = data.slice(start, end);
+
+  const rows = paginatedData.map((item) => (
     <Table.Tr key={item.name}>
       <Table.Td>
         <Group gap="sm">
@@ -60,7 +78,7 @@ export function UserList() {
         <Anchor component="button" size="sm">
           {item.email}
         </Anchor>
-      </Table.Td> 
+      </Table.Td>
       <Table.Td>
         <Text fz="sm">{item.matricula}</Text>
       </Table.Td>
@@ -78,19 +96,31 @@ export function UserList() {
   ));
 
   return (
-    <Table.ScrollContainer minWidth={800}>
-      <Table verticalSpacing="sm">
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Nome de Usuario</Table.Th>
-            <Table.Th>cargo</Table.Th>
-            <Table.Th>Email</Table.Th>
-            <Table.Th>Matricula</Table.Th>
-            <Table.Th />
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>{rows}</Table.Tbody>
-      </Table>
-    </Table.ScrollContainer>
+    <>
+      <Table.ScrollContainer minWidth={800}>
+        <Table verticalSpacing="sm">
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>Nome de Usuário</Table.Th>
+              <Table.Th>Cargo</Table.Th>
+              <Table.Th>Email</Table.Th>
+              <Table.Th>Matrícula</Table.Th>
+              <Table.Th />
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>{rows}</Table.Tbody>
+        </Table>
+      </Table.ScrollContainer>
+
+      {/* Paginação abaixo da tabela */}
+      <Group justify="center" mt="md">
+        <Pagination
+          total={Math.ceil(data.length / rowsPerPage)}
+          value={page}
+          onChange={setPage}
+          color="#B13433"
+        />
+      </Group>
+    </>
   );
 }

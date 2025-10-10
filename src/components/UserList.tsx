@@ -92,5 +92,6 @@ export function UserList() {
         <Table.Tbody>{rows}</Table.Tbody>
       </Table>
     </Table.ScrollContainer>
+    
   );
 }
