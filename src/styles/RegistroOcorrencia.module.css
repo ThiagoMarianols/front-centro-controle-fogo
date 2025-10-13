@@ -1,3 +1,7 @@
+/* ==========================
+   FORMULÁRIO RESPONSIVO – IPHONE
+   ========================== */
+
 .mainContent {
   margin-left: 500px;
   min-height: 100dvh;
@@ -5,126 +9,136 @@
   padding: 24px;
   display: flex;
   justify-content: center;
-}
-
-.root {
-  position: relative;
-}
-
-.label {
-  position: absolute;
-  z-index: 2;
-  top: 7px;
-  left: var(--mantine-spacing-sm);
-  pointer-events: none;
-  color: light-dark(var(--mantine-color-gray-5), var(--mantine-color-dark-3));
-  transition: all 150ms ease;
-}
-
-.label[data-floating] {
-  transform: translate(calc(var(--mantine-spacing-sm) * -1), -28px);
-  font-size: var(--mantine-font-size-xs);
-  font-weight: 500;
-  color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
-}
-
-.required {
-  opacity: 0;
-  transition: opacity 150ms ease;
-}
-
-[data-floating] .required {
-  opacity: 1;
-}
-
-.input::placeholder {
-  color: transparent;
-  transition: color 150ms ease;
-}
-
-.input[data-floating]::placeholder {
-  color: var(--mantine-color-placeholder);
-}
-
-.section {
-  padding: 0 7vw;
-  border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
-}
-
-.paper {
-  padding: 24px;
-}
-
-.cardsStack {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.cardTitle,
-.title {
-  margin-bottom: 12px;
-}
-
-.title {
-  text-align: center;
-}
-
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.formGrid {
-  width: 100%;
-  margin-top: 8px;
-  display: grid;
-  gap: 16px;
-  grid-template-columns: 1fr;
-}
-
-.fullWidthField {
-  width: 100%;
+  transition: all 0.3s ease;
 }
 
 .centerWrap {
   max-width: 1200px;
-  margin: 0 auto;
   width: 100%;
   padding: 0 2vw;
 }
 
-.button {
-  margin: 16px auto 0 auto; /* centraliza horizontalmente */
-  display: block;
+.formGrid {
+  width: 100%;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+  transition: all 0.3s ease;
 }
 
-
-@media (max-width: 992px) {
-  .section {
-    padding: 0 24px;
+/* ==========================
+   iPhone X – 375px
+   ========================== */
+@media (max-width: 375px) {
+  .mainContent {
+    margin-left: 0;
+    padding: 12px;
+  }
+  .centerWrap {
+    padding: 0 6px;
+  }
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 }
 
-@media (max-width: 768px) {
+/* ==========================
+   iPhone 12 Pro – 390px
+   ========================== */
+@media (min-width: 376px) and (max-width: 390px) {
+  .mainContent {
+    margin-left: 0;
+    padding: 12px;
+  }
+  .centerWrap {
+    padding: 0 8px;
+  }
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* ==========================
+   iPhone XR – 414px
+   ========================== */
+@media (min-width: 391px) and (max-width: 415px) {
+  .mainContent {
+    margin-left: 0;
+    padding: 14px;
+  }
+  .centerWrap {
+    padding: 0 10px;
+  }
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+/* ==========================
+   iPhone 14 Pro – 430px
+   ========================== */
+@media (min-width: 415px) and (max-width: 430px) {
+  .mainContent {
+    margin-left: 0;
+    padding: 14px;
+  }
+  .centerWrap {
+    padding: 0 12px;
+  }
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+/* ==========================
+   Tablets e desktops
+   ========================== */
+
+/* Tablets (431px–767px) – duas colunas */
+@media (min-width: 431px) and (max-width: 767px) {
   .mainContent {
     margin-left: 0;
     padding: 16px;
   }
-  .section {
+  .centerWrap {
     padding: 0 16px;
   }
-}
-
-@media (min-width: 768px) {
   .formGrid {
     grid-template-columns: 1fr 1fr;
+    gap: 16px;
   }
 }
 
-@media (min-width: 1200px) {
+/* Desktop (768px–1199px) – três colunas */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .mainContent {
+    margin-left: 350px;
+    padding: 22px;
+  }
+  .centerWrap {
+    padding: 0 22px;
+  }
   .formGrid {
     grid-template-columns: 1fr 1fr 1fr;
+    gap: 22px;
+  }
+}
+
+/* Grandes telas (1200px ou mais) */
+@media (min-width: 1200px) {
+  .mainContent {
+    margin-left: 500px;
+    padding: 24px;
+  }
+  .centerWrap {
+    padding: 0 2vw;
+  }
+  .formGrid {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
   }
 }

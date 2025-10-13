@@ -1,53 +1,150 @@
+/* ==========================
+   ESTILOS BASE
+   ========================== */
 .mainContent {
-    margin-left: 300px; /* deixa espaço para a navbar fixa */
-    height: 100vh;      /* ocupa toda a altura da tela */
-    overflow-y: auto;   /* scroll só do conteúdo */
-    padding: 20px;      
-    margin-top: -5vw;/* opcional */
-  }
-  
-  .statsGrid {
-    margin-top: 0.1vw;
-    display: block;
-    justify-content: center;
-    align-items: center;
-    padding-left: 7vw;
-    padding-right: 7vw;
-    border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  margin-left: 300px;   /* Espaço para navbar fixa */
+  height: 100vh;        /* Ocupa a altura total da tela */
+  overflow-y: auto;     /* Rolagem apenas do conteúdo */
+  padding: 20px;
+  margin-top: -5vw;     /* Ajuste visual opcional */
+  transition: all 0.3s ease-in-out;
+}
+
+.statsGrid,
+.toolbar {
+  margin-top: 0.5vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-left: 7vw;
+  padding-right: 7vw;
+  border-bottom: 1px solid
+    light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  transition: all 0.3s ease-in-out;
+}
+
+/* ==========================
+   MOBILE – 4 BREAKPOINTS
+   ========================== */
+
+/* 1️⃣ Extra pequeno (até 360px) */
+@media (max-width: 360px) {
+  .mainContent {
+    margin-left: 0;
+    margin-top: 0;
+    padding: 10px;
+    height: auto;
+    min-height: 100dvh;
   }
 
+  .statsGrid,
   .toolbar {
-    margin-top: 0.1vw;
-    display: block;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+  }
+}
+
+/* 2️⃣ Pequeno (361px–480px) */
+@media (min-width: 361px) and (max-width: 480px) {
+  .mainContent {
+    margin-left: 0;
+    margin-top: 0;
+    padding: 12px;
+    height: auto;
+  }
+
+  .statsGrid,
+  .toolbar {
+    flex-direction: column;
+    gap: 10px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+/* 3️⃣ Médio (481px–600px) */
+@media (min-width: 481px) and (max-width: 600px) {
+  .mainContent {
+    margin-left: 0;
+    margin-top: 0;
+    padding: 14px;
+  }
+
+  .statsGrid,
+  .toolbar {
+    flex-direction: column;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+/* 4️⃣ Grande (601px–767px) */
+@media (min-width: 601px) and (max-width: 767px) {
+  .mainContent {
+    margin-left: 0;
+    margin-top: 0;
+    padding: 16px;
+  }
+
+  .statsGrid,
+  .toolbar {
+    flex-direction: row;
+    flex-wrap: wrap;
     justify-content: center;
-    align-items: center;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+/* ==========================
+   TABLET / DESKTOP PEQUENO
+   ========================== */
+
+/* 1️⃣ Tablet (768px–991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  .mainContent {
+    margin-left: 180px; /* Navbar menor */
+    padding: 20px;
+  }
+
+  .statsGrid,
+  .toolbar {
+    padding-left: 5vw;
+    padding-right: 5vw;
+  }
+}
+
+/* ==========================
+   DESKTOP – 2 BREAKPOINTS
+   ========================== */
+
+/* 1️⃣ Desktop padrão (992px–1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .mainContent {
+    margin-left: 250px;
+    padding: 24px;
+  }
+
+  .statsGrid,
+  .toolbar {
+    padding-left: 6vw;
+    padding-right: 6vw;
+  }
+}
+
+/* 2️⃣ Grandes telas (1200px ou mais) */
+@media (min-width: 1200px) {
+  .mainContent {
+    margin-left: 300px;
+    padding: 28px;
+    max-width: 1400px;
+    margin-right: auto;
+  }
+
+  .statsGrid,
+  .toolbar {
     padding-left: 7vw;
     padding-right: 7vw;
-    border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
   }
-  
-  /* Mobile: até 768px */
-  @media (max-width: 768px) {
-    .mainContent {
-      margin-left: 0;
-      margin-top: 0;
-      padding: 16px;
-      height: auto;
-      min-height: 100dvh;
-    }
-
-    .statsGrid,
-    .toolbar {
-      padding-left: 16px;
-      padding-right: 16px;
-    }
-  }
-
-  /* Tablet: até 992px */
-  @media (max-width: 992px) {
-    .statsGrid,
-    .toolbar {
-      padding-left: 24px;
-      padding-right: 24px;
-    }
-  }
+}
