@@ -1,20 +1,20 @@
-import { ItenList } from '../../components/ItenList'
-import classes from '../../styles/administracao/Users.module.css'
+import { ItenList } from '../components/ItenList'
+import classes from '../styles/administracao/TipoOcorrencia.module.css'
 import { Button } from '@mantine/core'
 import { useNavigate } from 'react-router-dom'
 
-const Batalhao = () => {
+const Ocorrencia = () => {
   const navigate = useNavigate();
   return (
     <div className={classes.mainContent}>
       <div className={classes.header}>
-        <h1 className={classes.title}>Batalhões</h1>
+        <h1 className={classes.title}>Ocorrencias</h1>
         <Button
           variant="filled"
           className={classes.button}
-          onClick={() => navigate('/administracao/RegistroBatalhao')}
+          onClick={() => navigate('/RegistroOcorrencia')}
         >
-          Cadastrar Batalhão
+          Registrar Ocorrencia
         </Button>
       </div>
       <div className={classes.userListContainer}>
@@ -26,4 +26,4 @@ const Batalhao = () => {
   )
 }
 
-export default Batalhao
+export default Ocorrencia

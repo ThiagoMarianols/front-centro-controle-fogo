@@ -36,28 +36,7 @@ export default function Login() {
         <h2 className={classes.subtitle}>Centro de Controle de Fogo</h2>
         <img src={logoCCF2} alt="Logo" className={classes.logoCCF}/>
 
-        <TextInput id='input-login' label="Endereço de e-mail" placeholder="Seu@email.com" size="md" radius="md"  />
-        <form onSubmit={form.onSubmit((values) => console.log(values))}>
-      <TextInput
-        withAsterisk
-        label="Email"
-        placeholder="your@email.com"
-        key={form.key('email')}
-        {...form.getInputProps('email')}
-        className={classes.inputLogin}
-      />
-
-      <Checkbox
-        mt="md"
-        label="I agree to sell my privacy"
-        key={form.key('termsOfService')}
-        {...form.getInputProps('termsOfService', { type: 'checkbox' })}
-      />
-
-      <Group justify="flex-end" mt="md">
-        <Button type="submit">Submit</Button>
-      </Group>
-    </form>
+        <TextInput id='input-login' label="Endereço de e-mail" placeholder="Seu@email.com" size="md" radius="md" className={classes.inputPassword} />
         <PasswordInput id='input-password' label="Senha" placeholder="***********" size="md" radius="md" className={classes.inputPassword} />
         <Checkbox label="Lembrar de mim" mt="xl" size="md" />
         <Button fullWidth mt="xl" size="md" radius="md" className={classes.buttonLogin} >

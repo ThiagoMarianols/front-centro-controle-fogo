@@ -1,5 +1,4 @@
-import React from 'react'
-import { UserList } from '../../components/UserList'
+import { ItenList } from '../../components/ItenList'
 import classes from '../../styles/administracao/Users.module.css'
 import { Button } from '@mantine/core'
 import { useNavigate } from 'react-router-dom'
@@ -20,7 +19,7 @@ const Users = () => {
       </div>
       <div className={classes.userListContainer}>
         <div className={classes.userList}>
-          <UserList />
+          <ItenList />
         </div>
       </div>
     </div>

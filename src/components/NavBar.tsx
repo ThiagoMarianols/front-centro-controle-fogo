@@ -13,7 +13,7 @@ import logoCCF from '../assets/img/LogoCCF3.png';
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 const mockdata = [
-  { label: 'Registrar Ocorrencia', icon: IconNotes, link: '/registroOcorrencia'  },
+  { label: 'Ocorrencias', icon: IconNotes, link: '/Ocorrencia'  },
   { label: 'Relatórios', icon: IconFileAnalytics, link: 'administracao/Relatorios' },
   { label: 'Dashboard', icon: IconGauge, link: '/dashboard' },
   {

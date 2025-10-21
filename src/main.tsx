@@ -8,13 +8,15 @@ import { MantineProvider } from '@mantine/core'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Login from './pages/Login.tsx'
 import Home from './pages/Home.tsx'
-import {RegistroOcorrencia} from './pages/RegistroOcorrencia.tsx'
 import { CadastroUsuario} from './pages/administracao/RegUser.tsx'
 import Users from './pages/administracao/Users.tsx'
 import TipoOcorrencia from './pages/administracao/TipoOcorrencia.tsx'
 import Relatorios from './pages/Relatorios.tsx'
 import Batalhao from './pages/administracao/batalhao.tsx'
 import Dashboard from './pages/dashboard.tsx'
+import Ocorrencia from './pages/Ocorrencia.tsx'
+import { RegistroOcorrencia } from './pages/RegistroOcorrencia.tsx'
+import { RegistroBatalhao } from './pages/administracao/RegistroBatalhao.tsx'
 //
 //const router = createBrowserRouter([
 //  {
@@ -36,13 +38,15 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       { path: '', element: <Home /> },
-      { path: 'registroOcorrencia', element: <RegistroOcorrencia /> },
       { path: 'administracao/CadastroUsuario', element: <CadastroUsuario /> },
       { path: 'administracao/Users', element: <Users /> },
       { path: 'administracao/TipoOcorrencia', element: <TipoOcorrencia /> },
       { path: 'administracao/Relatorios', element: <Relatorios /> },
       { path: 'administracao/Batalhao', element: <Batalhao /> },
       { path: 'dashboard', element: <Dashboard /> },
+      { path: 'Ocorrencia', element: <Ocorrencia /> },
+      { path: 'RegistroOcorrencia', element: <RegistroOcorrencia /> },
+      { path: 'administracao/RegistroBatalhao', element: <RegistroBatalhao /> },
     ],
   },
   {

@@ -12,43 +12,42 @@ import {
 
 const data = [
   {
+    id: 1,
     name: 'Robert Jonhson',
-    cargo: 'Engineer',
+    cargo: 'Operacional',
     email: 'robert.johnson@centrocontrolefogo.com.br',
     matricula: '8628965',
   },
   {
+    id: 2,
     name: 'Fernando Silva',
-    cargo: 'Engineer',
+    cargo: 'Operacional',
     email: 'fernando.silva@centrocontrolefogo.com.br',
     matricula: '8628954',
   },
   {
+    id: 3,
     name: 'Carlos Costa',
-    cargo: 'Designer',
+    cargo: 'Administrativo',
     email: 'carlos.costa@centrocontrolefogo.com.br',
     matricula: '8628474',
   },
   {
+    id: 4,
     name: 'Carlos Marques',
-    cargo: 'Designer',
+    cargo: 'Administrativo',
     email: 'carlos.marques@centrocontrolefogo.com.br',
     matricula: '8628474',
   },
   {
+    id: 5,
     name: 'Jaciel Marques',
-    cargo: 'Manager',
+    cargo: 'Administrativo',
     email: 'jaciel.marques@centrocontrolefogo.com.br',
     matricula: '8628441',
   },
   
 ];
-
-const cargoColors: Record<string, string> = {
-  engineer: 'blue',
-  manager: 'cyan',
-  designer: 'pink',
-};
 
 export function ItenList() {
   const [page, setPage] = useState(1);
@@ -60,7 +59,14 @@ export function ItenList() {
   const paginatedData = data.slice(start, end);
 
   const rows = paginatedData.map((item) => (
-    <Table.Tr key={item.name}>
+    <Table.Tr key={item.id}>
+      <Table.Td>
+        <Group gap="sm">
+          <Text fz="sm" fw={500}>
+            {item.id}
+          </Text>
+        </Group>
+      </Table.Td>
       <Table.Td>
         <Group gap="sm">
           <Text fz="sm" fw={500}>
@@ -68,9 +74,8 @@ export function ItenList() {
           </Text>
         </Group>
       </Table.Td>
-
       <Table.Td>
-        <Badge color={cargoColors[item.cargo.toLowerCase()]} variant="light">
+        <Badge color="#B13433" variant="light">
           {item.cargo}
         </Badge>
       </Table.Td>
@@ -101,6 +106,7 @@ export function ItenList() {
         <Table verticalSpacing="sm">
           <Table.Thead>
             <Table.Tr>
+              <Table.Th>Id</Table.Th>
               <Table.Th>Nome de Usuário</Table.Th>
               <Table.Th>Cargo</Table.Th>
               <Table.Th>Email</Table.Th>
