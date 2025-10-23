@@ -1,0 +1,24 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 16px;
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.title {
+  margin: 0;
+}
+
+.button {
+  align-self: center;
+}
+
+.tableContainer{
+  width: 100%;
+  
+  .tableTh{
+    text-align: center;
+  }
+}

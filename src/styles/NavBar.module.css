@@ -1,16 +1,15 @@
 .navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
   width: 300px;
   height: 100vh;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   padding: var(--mantine-spacing-md);
-  border-right: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  border-right: 1px solid
+    light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
   background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
   z-index: 1000;
-  transition: transform 200ms ease;
+  transition: transform 250ms ease, width 250ms ease;
   transform: translateX(0);
   overflow: hidden;
 }
@@ -21,7 +20,8 @@
   margin-left: calc(var(--mantine-spacing-md) * -1);
   margin-right: calc(var(--mantine-spacing-md) * -1);
   color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
-  border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  border-bottom: 1px solid
+    light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
   flex-shrink: 0;
 }
 
@@ -41,39 +41,40 @@
 }
 
 .footer {
-  border-top: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  border-top: 1px solid
+    light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
   padding-top: var(--mantine-spacing-md);
   flex-shrink: 0;
 }
 
-/* Ícones Tabler (usa currentColor) */
 .linkIcon {
-  color: #B13433;
+  color: #b13433;
 }
 
-/* Botão de sair (logout) */
 .logout {
   display: flex;
   align-items: center;
   gap: var(--mantine-spacing-xs);
   width: 100%;
   padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);
-  border: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  border: 1px solid
+    light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
   border-radius: 8px;
   background: transparent;
   color: light-dark(var(--mantine-color-black), var(--mantine-color-dark-0));
   cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.logout:hover {
+  background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-7));
+  transform: translateY(-2px);
 }
 
 .user {
   padding-bottom: var(--mantine-spacing-md);
 }
 
-.logout:hover {
-  background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-7));
-}
-
-/* Botão para abrir o menu no mobile */
 .toggleButton {
   position: fixed;
   top: 12px;
@@ -81,7 +82,8 @@
   z-index: 1100;
   width: 40px;
   height: 40px;
-  border: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  border: 1px solid
+    light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
   border-radius: 8px;
   background: var(--mantine-color-body);
   background-image: url("../assets/img/Icons/menuicon.png");
@@ -96,7 +98,6 @@
   display: none;
 }
 
-/* Responsividade */
 @media (max-width: 768px) {
   .navbar {
     width: min(80vw, 300px);

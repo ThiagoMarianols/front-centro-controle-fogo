@@ -62,7 +62,7 @@ export function RegistroOcorrencia() {
   }
 
   return (
-    <div className={classes.mainContent}>
+    <>
       <div className={classes.centerWrap}>
         <Title order={2} className={classes.title}>Registro de Ocorrência</Title>
 
@@ -195,6 +195,6 @@ export function RegistroOcorrencia() {
 
         <Button variant="filled" className={classes.button}>Registrar</Button>
       </div>
-    </div>
+    </>
   );
 }

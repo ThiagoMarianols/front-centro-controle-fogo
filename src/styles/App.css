@@ -1,8 +1,22 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
+.App{
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  flex-direction: row;
+  width: 100%; 
+  gap: 2rem;
+  min-height: 100vh;
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   padding: 2rem;
-  text-align: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100vh;
 }
 
 .logo {
@@ -30,6 +44,17 @@
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
+  }
+}
+
+/* Responsive: remove forced right padding on small screens so mobile navbar can overlay */
+@media (max-width: 768px) {
+  .App{
+    width: 100vw;
+  }
+  .navbar {
+    display: none;
+    width: 0;
   }
 }
 

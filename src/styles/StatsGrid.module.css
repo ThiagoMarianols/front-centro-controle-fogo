@@ -1,7 +1,26 @@
 .root {
-    padding: calc(var(--mantine-spacing-xl) * 1.5);
+  padding: calc(var(--mantine-spacing-xl) * 1.5);
+  
+}
+.startGrid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+.label {
+  font-family: Outfit, var(--mantine-font-family);
+}
+.paper {
+  border-radius: 10px;
+  padding: 10px;
+  width: 13rem;
+  height: 10rem;
+}
+@media (max-width: 1000px) {
+  .startGrid {
+    flex-direction: column;
   }
   
-  .label {
-    font-family: Outfit, var(--mantine-font-family);
-  }
+}

@@ -1,6 +1,5 @@
 .mainContent {
-  margin-left: 300px; /* deixa espaço para a navbar fixa */
-  margin-top: -5vw;/* opcional */
+  margin-top: -5vw;
 }
 
 .title {
@@ -44,7 +43,7 @@
   }
 }
 
-/* Mobile: até sm */
+
 @media (max-width: var(--mantine-breakpoint-sm)) {
   .mainContent {
     margin-left: 0;

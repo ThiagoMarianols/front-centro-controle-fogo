@@ -1,28 +1,17 @@
-import { ItenList } from '../../components/ItenList'
-import classes from '../../styles/administracao/Users.module.css'
-import { Button } from '@mantine/core'
-import { useNavigate } from 'react-router-dom'
+import { ReadItems } from '../../components/ReadItems'
+import { data, headers } from '../../mock/ItenListData'
 
 const Users = () => {
-  const navigate = useNavigate();
   return (
-    <div className={classes.mainContent}>
-      <div className={classes.header}>
-        <h1 className={classes.title}>Usuários</h1>
-        <Button
-          variant="filled"
-          className={classes.button}
-          onClick={() => navigate('/CadastroUsuario')}
-        >
-          Cadastrar Usuário
-        </Button>
-      </div>
-      <div className={classes.userListContainer}>
-        <div className={classes.userList}>
-          <ItenList />
-        </div>
-      </div>
-    </div>
+    <>
+      <ReadItems paramsReaderItems={{
+        headers: headers.map(header => header.toLowerCase()),
+        body: data.map(item => [item.id,item.email, item.name, item.cargo, item.matricula]),
+        titulo: "Usuários",
+        textButton: "Criar Usuário"
+        ,url: "administracao/CadastroUsuario"
+      }} />
+    </>
   )
 }
 
