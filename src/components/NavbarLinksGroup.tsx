@@ -29,7 +29,7 @@ export function LinksGroup({ icon: Icon, label, initiallyOpened, links, link }: 
 
   const controlContent = (
     <Group justify="space-between" gap={0}>
-      <Box style={{ display: 'flex', alignItems: 'center' }}>
+      <Box style={{ display: 'flex', alignItems: 'center', }}>
         <ThemeIcon variant="light" size={30}>
           <Icon size={18} />
         </ThemeIcon>
@@ -57,7 +57,7 @@ export function LinksGroup({ icon: Icon, label, initiallyOpened, links, link }: 
           {controlContent}
         </UnstyledButton>
       )}
-      {hasLinks ? <Collapse in={opened}>{items}</Collapse> : null}
+      {hasLinks ? <Collapse in={opened} className={classes.collapse}>{items}</Collapse> : null}
     </>
   );
 }

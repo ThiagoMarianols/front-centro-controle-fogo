@@ -4,7 +4,6 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: var(--mantine-spacing-md);
   border-right: 1px solid
     light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
   background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
@@ -15,29 +14,44 @@
 }
 
 .header {
-  padding: var(--mantine-spacing-md);
-  padding-top: 0;
-  margin-left: calc(var(--mantine-spacing-md) * -1);
-  margin-right: calc(var(--mantine-spacing-md) * -1);
-  color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: start;
   border-bottom: 1px solid
     light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
-  flex-shrink: 0;
+  
+  img{
+    margin: 0.5rem;
+  }
 }
 
 .links {
-  flex: 1 1 auto;
-  margin-left: calc(var(--mantine-spacing-md) * -1);
-  margin-right: calc(var(--mantine-spacing-md) * -1);
-  overflow-y: auto;
-  padding-top: var(--mantine-spacing-xl);
-  padding-bottom: var(--mantine-spacing-xl);
+  display: flex;
+  align-items: start;
+  flex-direction: column;
+  justify-content: start;
+  height: 100vh;
+  width: 100%;
+  padding-top: 1rem;
+
+  button{
+    border: none;
+  }
 }
 
 .linksInner {
   display: flex;
   flex-direction: column;
   gap: var(--mantine-spacing-xs);
+  
+    button:focus,
+  button:active,
+  button {
+    border: none;
+    outline: none;
+    box-shadow: none;
+  }
 }
 
 .footer {
@@ -45,6 +59,20 @@
     light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
   padding-top: var(--mantine-spacing-md);
   flex-shrink: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  margin-bottom: 1rem;
+  margin-left: 1rem;
+
+  .user{
+    width: 100%;
+  }
+  button{
+    width: 60%;
+  }
 }
 
 .linkIcon {
