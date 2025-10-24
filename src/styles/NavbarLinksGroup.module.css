@@ -5,6 +5,8 @@
     padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);
     color: var(--mantine-color-text);
     font-size: var(--mantine-font-size-sm);
+    border: none;
+    overflow: hidden;
   
     @mixin hover {
       background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-7));
@@ -19,14 +21,14 @@
   
   .link {
     font-weight: 500;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
     text-decoration: none;
-    padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);
-    padding-left: var(--mantine-spacing-md);
-    margin-left: var(--mantine-spacing-xl);
     font-size: var(--mantine-font-size-sm);
     color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
-    border-left: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+    width: 100%;
+    margin: 0 1rem 1rem;
   
     @mixin hover {
       background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-7));
@@ -37,4 +39,17 @@
   .chevron {
     transition: transform 200ms ease;
     color: #B13433;
+  }
+  .collapse{
+    display: block;
+    width: max-content;
+    padding: 0;
+    gap: 1rem;
+    border-left: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+    margin-left: 2rem;
+
+    
+    a:last-child {
+      margin-bottom: 0;
+    }
   }

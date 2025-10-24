@@ -45,6 +45,29 @@
 }
   
 
+/* Botão de login */
+.loginButton {
+  margin-top: 24px;
+  background-color: #B13433;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-size: 15px;
+  height: 46px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+}
+
+.loginButton:hover {
+  background-color: #9a2d2c;
+  transform: translateY(-1px);
+}
+
+.loginButton:active {
+  transform: translateY(0);
+}
+
 .title {
   color: #000;
   font-family: "NunitoSans";
