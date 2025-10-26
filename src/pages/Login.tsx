@@ -1,5 +1,3 @@
-//aqui a IA cantou pra me ajudar, ainda vou verificar o que dá pra usar, e o que a IA jogou de lixo aqui ....
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -11,7 +9,6 @@ import {
   Text,
   Alert,
   Box,
-  Title,
   Stack,
 } from '@mantine/core';
 import { useForm, isEmail } from '@mantine/form';
@@ -19,22 +16,19 @@ import { IconAlertCircle, IconLock, IconMail } from '@tabler/icons-react';
 import classes from '../styles/Login.module.css';
 import logoCCF2 from '../assets/img/LogoCCF3.png';
 
-// Numero de tentativas de login antes de mostrar o CAPTCHA
+// Lógica de tentativas de login
 const MAX_LOGIN_ATTEMPTS = 3;
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [loginAttempts, setLoginAttempts] = useState(0);
-  const [showCaptcha, setShowCaptcha] = useState(false);
-  const [generatedCaptcha, setGeneratedCaptcha] = useState('');
   const navigate = useNavigate();
 
   const form = useForm({
     initialValues: {
       email: '',
       password: '',
-      captcha: '',
     },
 
     validate: {
@@ -48,27 +42,9 @@ export default function Login() {
         if (value.length < 8) return 'A senha deve ter pelo menos 8 caracteres';
         return null;
       },
-      captcha: (value) => {
-        if (loginAttempts >= MAX_LOGIN_ATTEMPTS && !value) {
-          return 'Por favor, complete a verificação';
-        }
-        if (loginAttempts >= MAX_LOGIN_ATTEMPTS && value !== generatedCaptcha) {
-          return 'Código de verificação incorreto';
-        }
-        return null;
-      },
     },
   });
 
-  // Gera um CAPTCHA simples
-  const generateCaptcha = () => {
-    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    let captcha = '';
-    for (let i = 0; i < 6; i++) {
-      captcha += chars[Math.floor(Math.random() * chars.length)];
-    }
-    return captcha;
-  };
 
   const handleSubmit = async (values: typeof form.values, event?: React.FormEvent) => {
     if (event) {
@@ -103,12 +79,6 @@ export default function Login() {
       console.log('Erros de validação encontrados');
       return;
     }
-    if (loginAttempts >= MAX_LOGIN_ATTEMPTS && values.captcha !== generatedCaptcha) {
-      setError('Código de verificação incorreto');
-      setGeneratedCaptcha(generateCaptcha()); // Regenerate CAPTCHA on failure
-      form.setFieldValue('captcha', ''); // Clear the CAPTCHA input
-      return;
-    }
 
     setIsLoading(true);
     setError('');
@@ -123,19 +93,13 @@ export default function Login() {
       const attempts = loginAttempts + 1;
       setLoginAttempts(attempts);
       
-      if (attempts >= MAX_LOGIN_ATTEMPTS) {
-        setShowCaptcha(true);
-        setGeneratedCaptcha(generateCaptcha());
-      }
+      // Incrementa as tentativas de login
       
       setError('Email ou senha incorretos');
     } finally {
       setIsLoading(false);
     }
   };
-
-  // Log para depuração
-  console.log('Renderizando Login');
 
   return (
     <div className={classes.wrapper}>
@@ -144,13 +108,9 @@ export default function Login() {
           <img 
             src={logoCCF2} 
             alt="Logo CCF" 
-            className={classes.logo} 
-            style={{ maxWidth: '200px', marginBottom: '1.5rem' }}
+            className={classes.logo}
           />
-          <Title order={2} className={classes.title}>
-            Bem-vindo ao CCF
-          </Title>
-          <Text c="dimmed" size="sm" mb="xl">
+          <Text className={`${classes.subtitle} ${classes.subtitleSpacing}`}>
             Faça login para acessar o sistema
           </Text>
         </Stack>
@@ -166,8 +126,8 @@ export default function Login() {
           </Alert>
         )}
 
-        <form onSubmit={(e) => handleSubmit(form.values, e)}>
-          <Stack>
+        <form onSubmit={(e) => handleSubmit(form.values, e)} className={classes.loginForm}>
+          <Stack className={classes.formStack}>
             <TextInput
               withAsterisk
               label="Email"
@@ -192,24 +152,6 @@ export default function Login() {
               autoComplete="current-password"
             />
 
-            {showCaptcha && (
-              <Box>
-                <Text size="sm" mb="xs">Digite o código abaixo:</Text>
-                <Text fw={700} mb="xs" style={{ letterSpacing: '5px', fontSize: '1.5rem' }}>
-                  {generatedCaptcha}
-                </Text>
-                <TextInput
-                  placeholder="Digite o código"
-                  value={form.values.captcha}
-                  onChange={(event) => {
-                    form.setFieldValue('captcha', event.currentTarget.value.toUpperCase());
-                  }}
-                  disabled={isLoading}
-                  maxLength={6}
-                  style={{ textTransform: 'uppercase' }}
-                />
-              </Box>
-            )}
 
             <Group justify="space-between" mt="lg">
               <Text 

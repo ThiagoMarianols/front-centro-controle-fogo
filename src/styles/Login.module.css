@@ -5,63 +5,94 @@
   font-style: normal;
 }
 
-
 .wrapper {
-  width: 100vw;
-  min-height: 100dvh;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
   background-image: url("../assets/img/Backgraund.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.logoCCF {
+  maxWidth: '200px';
 }
 
 .form {
-  border-right: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-7));
-  height: 100vh;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 40px 30px;
+  width: 100%;
   max-width: 450px;
-  padding-top: 1%;
-  border-radius: 0;
+  margin: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  height: auto;
+  max-height: 90vh;
+  overflow-y: auto;
   padding-left: var(--mantine-spacing-md);
-  padding-right: var(--mantine-spacing-md);
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
 
-  @media (max-width: var(--mantine-breakpoint-sm)) {
-    max-width: 100%;
-    
+@media (max-width: 768px) {
+  .form {
+    padding: 30px 20px;
+    max-width: 90%;
+    max-height: 95vh;
+  }
+  
+  .wrapper {
+    padding: 10px;
   }
 }
 
-.inputLogin input{
+.inputLogin input,
+.inputPassword input {
   border-radius: 5px !important;
   border: 2px solid #3b3b3b82 !important;
-  background: rgba(46, 46, 46, 0.00) !important;
-  border-radius: 7px !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  height: 48px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  width: 100%;
+  padding: 0 12px;
+  box-sizing: border-box;
 }
 
-.inputPassword input{
-  border-radius: 5px !important;
-  border: 2px solid #3b3b3b82 !important;
-  background: rgba(46, 46, 46, 0.00) !important;
-  border-radius: 7px !important;
+.inputLogin input:focus,
+.inputPassword input:focus {
+  border-color: #B13433 !important;
+  box-shadow: 0 0 0 2px rgba(177, 52, 51, 0.2);
+  outline: none;
 }
   
-
-/* Botão de login */
 .loginButton {
   margin-top: 24px;
-  background-color: #B13433;
+  background-color: #B13433 !important;
   font-weight: 600;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  font-size: 15px;
-  height: 46px;
-  border-radius: 8px;
+  font-size: 16px;
+  height: 48px;
+  border-radius: 8px !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   transition: all 0.2s ease;
+  width: 100%;
+  border: none;
+  color: white;
+  cursor: pointer;
 }
 
 .loginButton:hover {
-  background-color: #9a2d2c;
-  transform: translateY(-1px);
+  background-color: #9a2d2c !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15);
 }
 
 .loginButton:active {
@@ -71,43 +102,62 @@
 .title {
   color: #000;
   font-family: "NunitoSans";
-  font-size: 40px;
-  font-style: normal;
-  font-weight: normal;
-  line-height: normal;
+  font-size: clamp(28px, 5vw, 40px);
   text-align: center;
+  line-height: 1.2;
+  font-weight: bold;
 }
 
 .subtitle {
-  color: #170707;
-  font-family: "Arial";
-  font-size: 14px;
-  font-style: solid;
-  font-weight: 300;
-  line-height: 16px;
+  color: var(--mantine-color-dimmed);
+  font-family: "NunitoSans", sans-serif;
+  font-size: 16px;
   text-align: center;
+  line-height: 1.5;
+  max-width: 320px;
+  font-weight: 300;
 }
 
-.buttonLogin {
-  background-color: #B13433 !important;
-  border-radius: 5px !important;
-  color: white !important;
-  
+.subtitleSpacing {
+  margin: 8px 0 16px 0;
 }
 
+.loginForm {
+  margin-top: 0;
+}
+
+.formStack {
+  gap: 0.5rem;
+}
 
 .logoCCF {
   width: clamp(100px, 30vw, 180px);
   height: auto;
   aspect-ratio: 409/267;
-  padding-left: var(--mantine-spacing-md);
   display: block;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 auto 24px;
 }
 
-.title {
-  margin-bottom: 2px;
+/* Melhorias para telas muito pequenas */
+@media (max-width: 480px) {
+  .form {
+    padding: 24px 16px;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+  }
+  
+  .loginButton {
+    font-size: 15px;
+    height: 46px;
+  }
+  
+  .inputLogin input,
+  .inputPassword input {
+    height: 44px;
+    font-size: 15px;
+  }
 }
 
 .subtitle {
