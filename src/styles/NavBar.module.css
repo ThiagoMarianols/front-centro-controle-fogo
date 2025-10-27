@@ -68,10 +68,12 @@
   align-items: center;
   justify-content: start;
   margin-bottom: 1rem;
-  margin-left: 1rem;
 
   .user{
     width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   button{
     width: 60%;
