@@ -4,4 +4,6 @@ export interface ParamsReaderItems {
   titulo: string;
   textButton: string;
   url: string;
+  showAtendimento?: boolean;
+  onAtendimentoClick?: (item: any) => void;
 }

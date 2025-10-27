@@ -7,9 +7,8 @@ import {
   TextInput,
   ActionIcon
 } from '@mantine/core';
-import { IconSearch, IconEdit, IconTrash } from '@tabler/icons-react';
-import { useNavigate } from 'react-router-dom'
-
+import { IconSearch, IconEdit, IconTrash, IconClipboardList } from '@tabler/icons-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@mantine/core';
 import type { ParamsReaderItems } from '../interface/IReaderItems';
 import classes from '../styles/administracao/ReadItems.module.css';
@@ -75,6 +74,9 @@ export function ReadItems({ paramsReaderItems }: { paramsReaderItems: ParamsRead
                     {header}
                 </Table.Th>
                 ))}
+                {paramsReaderItems.showAtendimento && (
+                  <Table.Th className={`${classes.tableTh} ${classes.actionsHeader}`}>Atendimento</Table.Th>
+                )}
                 <Table.Th className={`${classes.tableTh} ${classes.actionsHeader}`}>Ações</Table.Th>
             </Table.Tr>
             </Table.Thead>
@@ -84,6 +86,21 @@ export function ReadItems({ paramsReaderItems }: { paramsReaderItems: ParamsRead
                         {row.map((item, cellIndex) => (
                             <Table.Td key={cellIndex}>{item}</Table.Td>
                         ))}
+                        {paramsReaderItems.showAtendimento && (
+                          <Table.Td className={classes.actionsCell}>
+                            <Group gap="sm" className={classes.actionsGroup}>
+                              <Button
+                                leftSection={<IconClipboardList size={16} />}
+                                variant="light"
+                                color="green"
+                                size="xs"
+                                onClick={() => paramsReaderItems.onAtendimentoClick?.(row)}
+                              >
+                                Atendimento
+                              </Button>
+                            </Group>
+                          </Table.Td>
+                        )}
                         <Table.Td className={classes.actionsCell}>
                             <Group gap="sm" className={classes.actionsGroup}>
                                 <ActionIcon 
