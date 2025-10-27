@@ -1,20 +1,75 @@
 .mainContent {
-  height: 100vh;        /* Ocupa a altura total da tela */
-  overflow-y: auto;     /* Rolagem apenas do conteúdo */
-  padding: 20px;
-  margin-top: -5vw;     /* Ajuste visual opcional */
-  transition: all 0.3s ease-in-out;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .statsGrid,
 .toolbar {
-  margin-top: 0.5vw;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0.5rem auto 0;
+  padding: 1rem;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding-left: 7vw;
-  padding-right: 7vw;
-  border-bottom: 1px solid
-    light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
-  transition: all 0.3s ease-in-out;
+}
+
+
+@media (min-width: 600px) {
+  .mainContent {
+    padding: 1.5rem;
+  }
+  
+  .statsGrid,
+  .toolbar {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 900px) {
+  .mainContent {
+    padding: 2rem;
+  }
+  
+  .statsGrid,
+  .toolbar {
+    padding: 2rem;
+    margin: 1rem auto 0;
+  }
+}
+
+@media (min-width: 1200px) {
+  .mainContent {
+    padding: 2rem;
+  }
+  
+  .statsGrid,
+  .toolbar {
+    padding: 2rem 3rem;
+  }
+}
+
+@media (min-width: 1600px) {
+  .mainContent {
+    padding: 3rem 4rem;
+  }
+  
+  .statsGrid,
+  .toolbar {
+    max-width: 1600px;
+    padding: 2.5rem 4rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .mainContent {
+    padding: 0.75rem;
+  }
+  
+  .statsGrid,
+  .toolbar {
+    padding: 0.75rem;
+  }
 }

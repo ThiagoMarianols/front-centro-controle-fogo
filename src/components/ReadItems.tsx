@@ -4,9 +4,10 @@ import {
   Pagination,
   Group,
   Text,
-  TextInput
+  TextInput,
+  ActionIcon
 } from '@mantine/core';
-import { IconSearch } from '@tabler/icons-react';
+import { IconSearch, IconEdit, IconTrash } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@mantine/core';
@@ -14,6 +15,16 @@ import type { ParamsReaderItems } from '../interface/IReaderItems';
 import classes from '../styles/administracao/ReadItems.module.css';
 
 export function ReadItems({ paramsReaderItems }: { paramsReaderItems: ParamsReaderItems }) {
+    const handleEdit = (index: number) => {
+        console.log('Edit item at index:', index);
+    };
+
+    const handleDelete = (index: number) => {
+        if (window.confirm('Tem certeza que deseja excluir logicamente este item?')) {
+            console.log('Delete item at index:', index);
+        }
+    };
+
     const navigate = useNavigate();
     const [activePage, setPage] = useState(1);
     const [search, setSearch] = useState('');
@@ -60,18 +71,37 @@ export function ReadItems({ paramsReaderItems }: { paramsReaderItems: ParamsRead
             <Table.Thead>
             <Table.Tr>
                 {paramsReaderItems.headers.map((header) => (
-                <Table.Th className={classes.tableTh} key={header} style={{ textTransform: 'capitalize' }}>
+                <Table.Th className={`${classes.tableTh} ${classes.capitalize}`} key={header}>
                     {header}
                 </Table.Th>
                 ))}
+                <Table.Th className={`${classes.tableTh} ${classes.actionsHeader}`}>Ações</Table.Th>
             </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-                {paginatedData.map((row, index) => (
-                    <Table.Tr key={index}>
-                        {row.map((item, index) => (
-                            <Table.Td key={index}>{item}</Table.Td>
+                {paginatedData.map((row, rowIndex) => (
+                    <Table.Tr key={rowIndex}>
+                        {row.map((item, cellIndex) => (
+                            <Table.Td key={cellIndex}>{item}</Table.Td>
                         ))}
+                        <Table.Td className={classes.actionsCell}>
+                            <Group gap="sm" className={classes.actionsGroup}>
+                                <ActionIcon 
+                                    variant="subtle" 
+                                    color="blue"
+                                    onClick={() => handleEdit(rowIndex)}
+                                >
+                                    <IconEdit size={16} />
+                                </ActionIcon>
+                                <ActionIcon 
+                                    variant="subtle" 
+                                    color="red"
+                                    onClick={() => handleDelete(rowIndex)}
+                                >
+                                    <IconTrash size={16} />
+                                </ActionIcon>
+                            </Group>
+                        </Table.Td>
                     </Table.Tr>
                 ))}
             </Table.Tbody>

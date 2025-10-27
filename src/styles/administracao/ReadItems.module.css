@@ -76,8 +76,24 @@
   width: 100%;
   margin-bottom: 1rem;
   
-  .tableTh{
+  .tableTh {
     text-align: center;
+  }
+  
+  .actionsHeader {
+    text-align: center;
+  }
+  
+  .actionsCell {
+    text-align: center;
+  }
+  
+  .actionsGroup {
+    justify-content: center;
+  }
+  
+  .capitalize {
+    text-transform: capitalize;
   }
 }
 
