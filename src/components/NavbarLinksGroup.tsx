@@ -10,9 +10,10 @@ interface LinksGroupProps {
   initiallyOpened?: boolean;
   links?: { label: string; link: string }[];
   link?: string; // rota direta quando não há sublinks
+  onClick?: () => void; // função para ser chamada ao clicar no item
 }
 
-export function LinksGroup({ icon: Icon, label, initiallyOpened, links, link }: LinksGroupProps) {
+export function LinksGroup({ icon: Icon, label, initiallyOpened, links, link, onClick }: LinksGroupProps) {
   const hasLinks = Array.isArray(links);
   const isDirectLink = !hasLinks && !!link;
   const [opened, setOpened] = useState(initiallyOpened || false);
@@ -46,18 +47,40 @@ export function LinksGroup({ icon: Icon, label, initiallyOpened, links, link }: 
     </Group>
   );
 
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    }
+    if (hasLinks) {
+      setOpened((o) => !o);
+    }
+  };
+
+  if (isDirectLink) {
+    return (
+      <>
+        <UnstyledButton 
+          component={Link}
+          to={link!}
+          onClick={handleClick}
+          className={classes.control}
+        >
+          {controlContent}
+        </UnstyledButton>
+        {hasLinks && <Collapse in={opened} className={classes.collapse}>{items}</Collapse>}
+      </>
+    );
+  }
+
   return (
     <>
-      {isDirectLink ? (
-        <UnstyledButton component={Link} to={link!} className={classes.control}>
-          {controlContent}
-        </UnstyledButton>
-      ) : (
-        <UnstyledButton onClick={() => setOpened((o) => !o)} className={classes.control}>
-          {controlContent}
-        </UnstyledButton>
-      )}
-      {hasLinks ? <Collapse in={opened} className={classes.collapse}>{items}</Collapse> : null}
+      <UnstyledButton 
+        onClick={handleClick}
+        className={classes.control}
+      >
+        {controlContent}
+      </UnstyledButton>
+      {hasLinks && <Collapse in={opened} className={classes.collapse}>{items}</Collapse>}
     </>
   );
 }

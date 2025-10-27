@@ -10,7 +10,6 @@ import { IconSearch } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@mantine/core';
-import { data } from '../mock/ItenListData';
 import type { ParamsReaderItems } from '../interface/IReaderItems';
 import classes from '../styles/administracao/ReadItems.module.css';
 
@@ -36,29 +35,27 @@ export function ReadItems({ paramsReaderItems }: { paramsReaderItems: ParamsRead
       setPage(1);
     }, [search]);
   return (
-    <>
-    
-    
-        <div className={classes.header}>
-            <h1 className={classes.title}>{paramsReaderItems.titulo}</h1>
-            <div className={classes.headerActions}>
-                <TextInput
-                    placeholder="Pesquisar..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    rightSection={<IconSearch size={16} />}
-                    className={classes.searchInput}
-                />
-                <Button
-                    variant="filled"
-                    className={classes.button}
-                    onClick={() => navigate(url)}
-                >
-                    {paramsReaderItems.textButton}
-                </Button>
-            </div>
+    <div className={classes.header}>
+      <div className={classes.headerRow}>
+        <h1 className={classes.title}>{paramsReaderItems.titulo}</h1>
+        <div className={classes.searchAndButtonContainer}>
+          <TextInput
+            placeholder="Pesquisar..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            rightSection={<IconSearch size={16} />}
+            className={classes.searchInput}
+          />
+          <Button
+            variant="filled"
+            className={classes.button}
+            onClick={() => navigate(url)}
+          >
+            {paramsReaderItems.textButton}
+          </Button>
         </div>
-        <Table.ScrollContainer minWidth={300} className={classes.tableContainer}>
+      </div>
+      <Table.ScrollContainer minWidth={300} className={classes.tableContainer}>
         <Table>
             <Table.Thead>
             <Table.Tr>
@@ -79,21 +76,21 @@ export function ReadItems({ paramsReaderItems }: { paramsReaderItems: ParamsRead
                 ))}
             </Table.Tbody>
         </Table>
-        </Table.ScrollContainer>
-        
-        <div className={classes.paginationContainer}>
-            <Text size="sm">
-                Mostrando {filteredData.length === 0 ? 0 : start + 1}-{Math.min(end, filteredData.length)} de {filteredData.length} itens
-                {search && ` (${filteredData.length} resultados encontrados)`}
-            </Text>
-            <Pagination
-                total={totalPages}
-                value={activePage}
-                onChange={setPage}
-                withEdges
-                className={classes.pagination}
-            />
-        </div>
-    </>
-      )
-    }
+      </Table.ScrollContainer>
+      
+      <div className={classes.paginationContainer}>
+          <Text size="sm">
+              Mostrando {filteredData.length === 0 ? 0 : start + 1}-{Math.min(end, filteredData.length)} de {filteredData.length} itens
+              {search && ` (${filteredData.length} resultados encontrados)`}
+          </Text>
+          <Pagination
+              total={totalPages}
+              value={activePage}
+              onChange={setPage}
+              withEdges
+              className={classes.pagination}
+          />
+      </div>
+    </div>
+  )
+}

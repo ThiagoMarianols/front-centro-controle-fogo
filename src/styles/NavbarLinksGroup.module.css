@@ -14,7 +14,6 @@
     }
   }
   
-  /* Colorir os ícones do item (Tabler usa currentColor) */
   .control svg {
     color: #B13433;
   }

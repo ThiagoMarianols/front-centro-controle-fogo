@@ -1,6 +1,9 @@
 .navbar {
   width: 300px;
   height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -8,9 +11,9 @@
     light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
   background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
   z-index: 1000;
-  transition: transform 250ms ease, width 250ms ease;
+  transition: transform 0.3s ease-in-out;
   transform: translateX(0);
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 .header {
@@ -108,62 +111,91 @@
   top: 12px;
   left: 12px;
   z-index: 1100;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: 1px solid
     light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
   border-radius: 8px;
-  background: var(--mantine-color-body);
+  background: var(--mantine-color-white);
   background-image: url("../assets/img/Icons/menuicon.png");
+  background-size: 24px;
   background-repeat: no-repeat;
   background-position: center;
   display: none;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s ease;
+}
+
+.toggleButton:hover {
+  background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
 }
 
 .closeButton {
   display: none;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1101;
+  width: 36px;
+  height: 36px;
+  border: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  border-radius: 8px;
+  background: var(--mantine-color-white);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.closeButton:hover {
+  background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
 }
 
 @media (max-width: 768px) {
   .navbar {
-    width: min(80vw, 300px);
+    width: 280px; /* Largura fixa para evitar problemas de layout */
+    max-width: 85vw; /* Não ultrapassar 85% da largura da tela */
     transform: translateX(-100%);
-    box-shadow: var(--mantine-shadow-md);
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
     height: 100vh;
-    overflow: hidden;
+    overflow-y: auto;
+    position: fixed; /* Garante que a navbar fique fixa */
+    z-index: 1000; /* Garante que a navbar fique acima de outros elementos */
   }
 
-  .navbar.open {
-    transform: translateX(0);
+  .open {
+    transform: translateX(0) !important;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.2);
   }
 
   .toggleButton {
-    display: inline-flex;
+    display: flex;
   }
 
   .closeButton {
-    display: inline-flex;
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    z-index: 1100;
-    width: 40px;
-    height: 40px;
-    border: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
-    border-radius: 8px;
-    background: var(--mantine-color-body);
-    background-repeat: no-repeat;
-    background-position: center;
-    align-items: center;
-    justify-content: center;
+    display: flex;
   }
 
   .backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.35);
+    background: rgba(0, 0, 0, 0.5);
     z-index: 900;
+    backdrop-filter: blur(2px);
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  .navbar:not(.open) + .backdrop {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
   }
 }

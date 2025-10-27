@@ -1,23 +1,23 @@
-.App{
+.App {
   display: flex;
   align-items: flex-start;
-  justify-content: center;
-  flex-direction: row;
-  width: 100%; 
-  gap: 2rem;
+  justify-content: flex-start;
   min-height: 100vh;
-  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .mainContent {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   padding: 2rem;
   box-sizing: border-box;
   width: 100%;
   min-height: 100vh;
+  margin-left: 300px;
+  max-width: calc(100% - 300px);
 }
 
 .logo {
@@ -48,14 +48,17 @@
   }
 }
 
-/* Responsive: remove forced right padding on small screens so mobile navbar can overlay */
 @media (max-width: 768px) {
-  .App{
-    width: 100vw;
+  .mainContent {
+    margin-left: 0;
+    max-width: 100%;
+    padding: 1rem;
+    width: 100%;
+    transition: transform 0.3s ease-in-out;
   }
-  .navbar {
-    display: none;
-    width: 0;
+
+  .App.nav-open .mainContent {
+    transform: translateX(min(85vw, 320px));
   }
 }
 

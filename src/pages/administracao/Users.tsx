@@ -8,8 +8,8 @@ const Users = () => {
         headers: headers.map(header => header.toLowerCase()),
         body: data.map(item => [item.id,item.email, item.name, item.cargo, item.matricula]),
         titulo: "Usuários",
-        textButton: "Criar Usuário"
-        ,url: "administracao/CadastroUsuario"
+        textButton: "Criar novo usuário"
+        ,url: "/administracao/CadastroUsuario"
       }} />
     </>
   )

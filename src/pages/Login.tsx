@@ -8,16 +8,12 @@ import {
   Button,
   Text,
   Alert,
-  Box,
   Stack,
 } from '@mantine/core';
 import { useForm, isEmail } from '@mantine/form';
 import { IconAlertCircle, IconLock, IconMail } from '@tabler/icons-react';
 import classes from '../styles/Login.module.css';
 import logoCCF2 from '../assets/img/LogoCCF3.png';
-
-// Lógica de tentativas de login
-const MAX_LOGIN_ATTEMPTS = 3;
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
@@ -53,10 +49,8 @@ export default function Login() {
     
     console.log('Formulário submetido', values);
     
-    // Limpa erros anteriores
     form.clearErrors();
     
-    // Validação manual
     let hasError = false;
     
     if (!values.email) {
@@ -84,7 +78,6 @@ export default function Login() {
     setError('');
 
     try {
-      // Simula chamada à API
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       navigate('/');
@@ -92,9 +85,7 @@ export default function Login() {
     } catch (err) {
       const attempts = loginAttempts + 1;
       setLoginAttempts(attempts);
-      
-      // Incrementa as tentativas de login
-      
+            
       setError('Email ou senha incorretos');
     } finally {
       setIsLoading(false);
