@@ -4,6 +4,9 @@ import './styles/index.css'
 import App from './App.tsx'
 import { MantineProvider } from '@mantine/core'
 
+// PWA
+import { registerSW } from 'virtual:pwa-register'
+
 //rotas
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Login from './pages/Login.tsx'
@@ -46,10 +49,35 @@ const router = createBrowserRouter([
 
 
 
+// Registra o Service Worker para PWA
+const updateSW = registerSW({
+  onNeedRefresh() {
+    if (confirm('Nova atualização disponível! Recarregar para atualizar?')) {
+      updateSW(true);
+    }
+  },
+  onOfflineReady() {
+    console.log('App pronto para uso offline');
+  },
+});
+
+// Verifica se o navegador suporta service workers
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(registration => {
+        console.log('ServiceWorker registrado com sucesso: ', registration.scope);
+      })
+      .catch(error => {
+        console.log('Falha ao registrar o ServiceWorker: ', error);
+      });
+  });
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <MantineProvider >
+    <MantineProvider>
       <RouterProvider router={router} />
     </MantineProvider>
-  </StrictMode>
+  </StrictMode>,
 )
