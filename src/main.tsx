@@ -17,6 +17,7 @@ import Dashboard from './pages/dashboard.tsx'
 import Ocorrencia from './pages/Ocorrencia.tsx'
 import { RegistroOcorrencia } from './pages/RegistroOcorrencia.tsx'
 import { RegistroBatalhao } from './pages/administracao/RegistroBatalhao.tsx'
+import CadastroOcorrenciaSecun from './pages/administracao/CadastroOcorrenciaSecun.tsx'
 //
 //const router = createBrowserRouter([
 //  {
@@ -47,6 +48,7 @@ const router = createBrowserRouter([
       { path: 'Ocorrencia', element: <Ocorrencia /> },
       { path: 'RegistroOcorrencia', element: <RegistroOcorrencia /> },
       { path: 'administracao/RegistroBatalhao', element: <RegistroBatalhao /> },
+      { path: 'administracao/CadastroOcorrenciaSecun', element: <CadastroOcorrenciaSecun /> },
     ],
   },
   {
