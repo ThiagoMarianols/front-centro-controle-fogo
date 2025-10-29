@@ -42,7 +42,7 @@ export function CompletarOcorrencia() {
           return;
         }
 
-        const response = await fetch('http://localhost:8088/api/auth/paginator?page=1&size=100&active=true', {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/paginator?page=1&size=100&active=true`, {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`

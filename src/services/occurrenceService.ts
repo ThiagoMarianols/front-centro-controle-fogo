@@ -1,6 +1,6 @@
 import type { IOccurrenceRequest, IOccurrenceOnSiteRequest, IPaginatedResponse, IOccurrenceDTO } from '../interfaces/IOccurrence';
 
-const API_URL = 'http://localhost:8088/api/occurrences';
+const API_URL = `${import.meta.env.VITE_BASE_URL}/occurrences`;
 
 function getAuthHeaders(): HeadersInit {
   const token = localStorage.getItem('accessToken');

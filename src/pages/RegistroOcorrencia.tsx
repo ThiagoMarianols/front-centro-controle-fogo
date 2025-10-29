@@ -82,6 +82,16 @@ export function RegistroOcorrencia() {
       return;
     }
 
+    // telefone deve ter 10 (fixo) ou 11 (celular) dígitos
+    if (!(telefoneSolicitante.length === 10 || telefoneSolicitante.length === 11)) {
+      notifications.show({
+        title: 'Telefone inválido',
+        message: 'Informe um telefone com DDD (10 ou 11 dígitos). Ex: (81) 98765-8765',
+        color: 'red'
+      });
+      return;
+    }
+
     if (!endereco.logradouro || !endereco.numero || !endereco.bairro || !endereco.cidade || !endereco.estado) {
       notifications.show({
         title: 'Erro',
@@ -131,6 +141,15 @@ export function RegistroOcorrencia() {
     }
   }
 
+  function formatPhone(value: string) {
+    const digits = value.replace(/\D/g, '').slice(0, 11);
+    if (digits.length === 0) return '';
+    if (digits.length <= 2) return `(${digits}`;
+    if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  }
+
   return (
     <>
       <div className={classes.centerWrap}>
@@ -150,10 +169,11 @@ export function RegistroOcorrencia() {
               />
               <TextInput
                 label="Telefone"
-                placeholder="Telefone"
-                value={telefoneSolicitante}
-                onChange={(e) => setTelefoneSolicitante(e.target.value)}
+                placeholder="(00) 00000-0000"
+                value={formatPhone(telefoneSolicitante)}
+                onChange={(e) => setTelefoneSolicitante(e.target.value.replace(/\D/g, '').slice(0, 11))}
                 required
+                inputMode="tel"
               />
             </div>
           </Paper>
