@@ -23,6 +23,8 @@ import Ocorrencia from './pages/Ocorrencia.tsx'
 import { RegistroOcorrencia } from './pages/RegistroOcorrencia.tsx'
 import { RegistroBatalhao } from './pages/administracao/RegistroBatalhao.tsx'
 import { CadastroOcorrenciaSecun } from './pages/CadastroOcorrenciaSecun.tsx'
+import { DetalhesOcorrencia } from './pages/DetalhesOcorrencia.tsx'
+import { CompletarOcorrencia } from './pages/CompletarOcorrencia.tsx'
 
 const router = createBrowserRouter([
   {
@@ -37,6 +39,8 @@ const router = createBrowserRouter([
       { path: 'administracao/Batalhao', element: <ProtectedRoute><Batalhao /></ProtectedRoute> },
       { path: 'dashboard', element: <ProtectedRoute><Dashboard /></ProtectedRoute> },
       { path: 'Ocorrencia', element: <ProtectedRoute><Ocorrencia /></ProtectedRoute> },
+      { path: 'DetalhesOcorrencia/:id', element: <ProtectedRoute><DetalhesOcorrencia /></ProtectedRoute> },
+      { path: 'CompletarOcorrencia', element: <ProtectedRoute><CompletarOcorrencia /></ProtectedRoute> },
       { path: 'RegistroOcorrencia', element: <ProtectedRoute><RegistroOcorrencia /></ProtectedRoute> },
       { path: 'administracao/RegistroBatalhao', element: <ProtectedRoute><RegistroBatalhao /></ProtectedRoute> },
       { path: 'administracao/CadastroOcorrenciaSecun', element: <ProtectedRoute><CadastroOcorrenciaSecun /></ProtectedRoute> },
