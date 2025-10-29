@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client'
 import './styles/index.css'
 import App from './App.tsx'
 import { MantineProvider } from '@mantine/core'
+import { ProtectedRoute } from './components/auth/ProtectedRoute.tsx'
+import { AuthProvider } from './context/authContext';
 
 // PWA
 import { registerSW } from 'virtual:pwa-register'
@@ -27,25 +29,24 @@ const router = createBrowserRouter([
     path: '/',
     element: <App />,
     children: [
-      { path: '', element: <Home /> },
-      { path: 'administracao/CadastroUsuario', element: <CadastroUsuario /> },
-      { path: 'administracao/Users', element: <Users /> },
-      { path: 'administracao/TipoOcorrencia', element: <TipoOcorrencia /> },
-      { path: 'administracao/Relatorios', element: <Relatorios /> },
-      { path: 'administracao/Batalhao', element: <Batalhao /> },
-      { path: 'dashboard', element: <Dashboard /> },
-      { path: 'Ocorrencia', element: <Ocorrencia /> },
-      { path: 'RegistroOcorrencia', element: <RegistroOcorrencia /> },
-      { path: 'administracao/RegistroBatalhao', element: <RegistroBatalhao /> },
-      { path: 'administracao/CadastroOcorrenciaSecun', element: <CadastroOcorrenciaSecun /> },
+      { path: '', element: <ProtectedRoute><Home /></ProtectedRoute> },
+      { path: 'administracao/CadastroUsuario', element: <ProtectedRoute><CadastroUsuario /></ProtectedRoute> },
+      { path: 'administracao/Users', element: <ProtectedRoute><Users /></ProtectedRoute> },
+      { path: 'administracao/TipoOcorrencia', element: <ProtectedRoute><TipoOcorrencia /></ProtectedRoute> },
+      { path: 'administracao/Relatorios', element: <ProtectedRoute><Relatorios /></ProtectedRoute> },
+      { path: 'administracao/Batalhao', element: <ProtectedRoute><Batalhao /></ProtectedRoute> },
+      { path: 'dashboard', element: <ProtectedRoute><Dashboard /></ProtectedRoute> },
+      { path: 'Ocorrencia', element: <ProtectedRoute><Ocorrencia /></ProtectedRoute> },
+      { path: 'RegistroOcorrencia', element: <ProtectedRoute><RegistroOcorrencia /></ProtectedRoute> },
+      { path: 'administracao/RegistroBatalhao', element: <ProtectedRoute><RegistroBatalhao /></ProtectedRoute> },
+      { path: 'administracao/CadastroOcorrenciaSecun', element: <ProtectedRoute><CadastroOcorrenciaSecun /></ProtectedRoute> },
     ],
   },
   {
     path: '/login',
     element: <Login />,
   },
- 
-])
+]);
 
 
 
@@ -77,7 +78,9 @@ if ('serviceWorker' in navigator) {
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MantineProvider>
-      <RouterProvider router={router} />
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
     </MantineProvider>
   </StrictMode>,
 )

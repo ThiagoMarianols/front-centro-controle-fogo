@@ -14,6 +14,7 @@ import { useForm, isEmail } from '@mantine/form';
 import { IconAlertCircle, IconLock, IconMail } from '@tabler/icons-react';
 import classes from '../styles/Login.module.css';
 import logoCCF2 from '../assets/img/LogoCCF3.png';
+import { loginService } from '../services/authService';
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
@@ -46,13 +47,10 @@ export default function Login() {
     if (event) {
       event.preventDefault();
     }
-    
-    console.log('Formulário submetido', values);
-    
+
     form.clearErrors();
-    
     let hasError = false;
-    
+
     if (!values.email) {
       form.setFieldError('email', 'Email é obrigatório');
       hasError = true;
@@ -60,7 +58,7 @@ export default function Login() {
       form.setFieldError('email', 'Email inválido');
       hasError = true;
     }
-    
+
     if (!values.password) {
       form.setFieldError('password', 'Senha é obrigatória');
       hasError = true;
@@ -68,9 +66,8 @@ export default function Login() {
       form.setFieldError('password', 'A senha deve ter pelo menos 6 caracteres');
       hasError = true;
     }
-    
+
     if (hasError) {
-      console.log('Erros de validação encontrados');
       return;
     }
 
@@ -78,15 +75,19 @@ export default function Login() {
     setError('');
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      navigate('/');
-      
-    } catch (err) {
-      const attempts = loginAttempts + 1;
-      setLoginAttempts(attempts);
-            
-      setError('Email ou senha incorretos');
+      const result = await loginService({ email: values.email, password: values.password });
+      console.log(result);
+      if (result && result.success) {
+        localStorage.setItem('accessToken', result.accessToken);
+        localStorage.setItem('refreshToken', result.refreshToken);
+        localStorage.setItem('expiresRefreshToken', result.expiresRefreshToken.toString());
+        localStorage.setItem('id', result.user.id.toString());
+        navigate('/');
+      } else {
+        setError('Email ou senha incorretos');
+      }
+    } catch (err: any) {
+      setError('Erro ao autenticar. Tente novamente.');
     } finally {
       setIsLoading(false);
     }
