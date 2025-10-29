@@ -20,7 +20,7 @@ import Dashboard from './pages/dashboard.tsx'
 import Ocorrencia from './pages/Ocorrencia.tsx'
 import { RegistroOcorrencia } from './pages/RegistroOcorrencia.tsx'
 import { RegistroBatalhao } from './pages/administracao/RegistroBatalhao.tsx'
-import CadastroOcorrenciaSecun from './pages/administracao/CadastroOcorrenciaSecun.tsx'
+import { CadastroOcorrenciaSecun } from './pages/CadastroOcorrenciaSecun.tsx'
 
 const router = createBrowserRouter([
   {
@@ -46,8 +46,6 @@ const router = createBrowserRouter([
   },
  
 ])
-
-
 
 // Registra o Service Worker para PWA
 const updateSW = registerSW({
