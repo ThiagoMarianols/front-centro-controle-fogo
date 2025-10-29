@@ -5,7 +5,7 @@ import {
   deactivateBattalion, 
   activateBattalion
 } from '../../services/battalionService';
-import type { BattalionDTO } from '../../services/battalionService';
+import type { BattalionDTO } from '../../interfaces/IBattalion';
 import { notifications } from '@mantine/notifications';
 import { Center, Loader } from '@mantine/core';
 

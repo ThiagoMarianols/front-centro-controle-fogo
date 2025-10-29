@@ -10,14 +10,16 @@ import {
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { registerUser } from '../../services/userService';
-import type { UserRegisterDTO } from '../../services/userService';
+import type { UserRegisterDTO } from '../../interfaces/IUser';
 import { getBattalionsPaginated } from '../../services/battalionService';
+import { getAllPatents } from '../../services/patentService';
 import { useNavigate } from 'react-router-dom';
 
 export function CadastroUsuario() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [battalions, setBattalions] = useState<Array<{ value: string; label: string }>>([]);
+    const [patents, setPatents] = useState<Array<{ value: string; label: string }>>([]);
     
     // Personal data
     const [name, setName] = useState('');
@@ -46,6 +48,7 @@ export function CadastroUsuario() {
 
     useEffect(() => {
       fetchBattalions();
+      fetchPatents();
     }, []);
 
     const fetchBattalions = async () => {
@@ -67,16 +70,44 @@ export function CadastroUsuario() {
       }
     };
 
-    const handleSubmit = async () => {
-      console.log('handleSubmit called');
-      // Validations
-      if (!name || !username || !email || !cpf || !matriculates || !phoneNumber || !gender || !patent || !battalion || !dateBirth) {
-        console.log('Validation failed - missing fields:', {
-          name, username, email, cpf, matriculates, phoneNumber, gender, patent, battalion, dateBirth
-        });
+    const fetchPatents = async () => {
+      try {
+        const patentList = await getAllPatents();
+        const options = patentList
+          .filter(p => p.active)
+          .map(p => ({
+            value: p.id.toString(),
+            label: p.name
+          }));
+        setPatents(options);
+      } catch (error) {
         notifications.show({
           title: 'Erro',
-          message: 'Preencha todos os campos pessoais obrigatórios',
+          message: 'Erro ao carregar patentes',
+          color: 'red',
+        });
+      }
+    };
+
+    const handleSubmit = async () => {
+
+      const missingFields = [];
+      if (!name) missingFields.push('Nome');
+      if (!username) missingFields.push('Username');
+      if (!email) missingFields.push('Email');
+      if (!cpf) missingFields.push('CPF');
+      if (!matriculates) missingFields.push('Matrícula');
+      if (!phoneNumber) missingFields.push('Telefone');
+      if (!gender) missingFields.push('Sexo');
+      if (!patent) missingFields.push('Patente');
+      if (!battalion) missingFields.push('Batalhão');
+      if (!dateBirth) missingFields.push('Data de Nascimento');
+      
+      if (missingFields.length > 0) {
+        console.log('Missing fields:', missingFields);
+        notifications.show({
+          title: 'Campos obrigatórios faltando',
+          message: `Preencha: ${missingFields.join(', ')}`,
           color: 'red',
         });
         return;
@@ -109,8 +140,11 @@ export function CadastroUsuario() {
         return;
       }
 
+      console.log('Validation passed, preparing to send...');
+      
       try {
         setLoading(true);
+        console.log('Loading set to true');
 
         const userData: UserRegisterDTO = {
           name,
@@ -135,7 +169,9 @@ export function CadastroUsuario() {
           }
         };
 
+        console.log('Sending userData to backend:', userData);
         await registerUser(userData);
+        console.log('User registered successfully!');
         
         notifications.show({
           title: 'Sucesso',
@@ -144,14 +180,17 @@ export function CadastroUsuario() {
         });
 
         // Redirect to users list
-        navigate('/usuarios');
+        navigate('/administracao/Users');
       } catch (error: any) {
+        console.error('Error registering user:', error);
+        console.error('Error response:', error.response);
         notifications.show({
           title: 'Erro',
-          message: error.response?.data?.mensagem || 'Erro ao cadastrar usuário',
+          message: error.response?.data?.mensagem || error.message || 'Erro ao cadastrar usuário',
           color: 'red',
         });
       } finally {
+        console.log('Setting loading to false');
         setLoading(false);
       }
     };
@@ -243,15 +282,7 @@ export function CadastroUsuario() {
                 className={classes.fullWidthField}
                 label="Patente"
                 placeholder="Informe a patente do usuario"
-                data={[
-                  { value: '1', label: 'Soldado' },
-                  { value: '2', label: 'Cabo' },
-                  { value: '3', label: 'Sargento' },
-                  { value: '4', label: 'Tenente' },
-                  { value: '5', label: 'Capitão' },
-                  { value: '6', label: 'Major' },
-                  { value: '7', label: 'Coronel' }
-                ]}
+                data={patents}
                 value={patent}
                 onChange={setPatent}
                 required
@@ -392,8 +423,11 @@ export function CadastroUsuario() {
         <Button 
           variant="filled" 
           className={classes.button}
-          onClick={handleSubmit}
+          onClick={() => {
+            handleSubmit();
+          }}
           loading={loading}
+          type="button"
         >
           Cadastrar Usuário
         </Button>
