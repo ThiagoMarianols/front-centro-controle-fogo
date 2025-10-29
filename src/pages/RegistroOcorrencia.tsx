@@ -2,16 +2,17 @@ import { useState } from 'react';
 import classes from '../styles/RegistroOcorrencia.module.css';
 import {  
   Select,
-  Checkbox,
-  Group,
   TextInput,
   Paper,
   Title,
-  Button 
+  Button,
+  Group,
+  Radio
 } from '@mantine/core';
 
 export function RegistroOcorrencia() {
   const [cep, setCep] = useState('');
+  const [temVitimas, setTemVitimas] = useState<string | null>(null);
   const [endereco, setEndereco] = useState({
     logradouro: '',
     bairro: '',
@@ -178,17 +179,19 @@ export function RegistroOcorrencia() {
                 ]}
               />
 
-              <Checkbox.Group
+              <Radio.Group
                 className={classes.fullWidthField}
                 label="Existência de vítimas"
                 description="Existem vítimas?"
                 withAsterisk
+                value={temVitimas || ''}
+                onChange={(value) => setTemVitimas(value)}
               >
-                <Group mt="xs">
-                  <Checkbox value="Sim" label="Sim" />
-                  <Checkbox value="Não" label="Não" />
+                <Group mt="xs" justify="center">
+                  <Radio value="Sim" label="Sim" />
+                  <Radio value="Não" label="Não" />
                 </Group>
-              </Checkbox.Group>
+              </Radio.Group>
             </form>
           </Paper>
         </div>

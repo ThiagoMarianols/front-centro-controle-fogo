@@ -10,8 +10,8 @@ import {
   Textarea, 
   ActionIcon, 
   MultiSelect,
-  Checkbox,
-  Group
+  Group,
+  Radio
 } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
 import { IconTrash } from '@tabler/icons-react';
@@ -41,6 +41,8 @@ export function CadastroOcorrenciaSecun() {
     complemento: '',
     numero: ''
   });
+  
+  const [temVitimas, setTemVitimas] = useState<string | null>(null);
 
   // Função que consulta o ViaCEP
   async function buscarCep(valor: string) {
@@ -246,17 +248,19 @@ export function CadastroOcorrenciaSecun() {
                 ]}
               />
 
-              <Checkbox.Group
+              <Radio.Group
                 className={classes.fullWidthField}
                 label="Existência de vítimas"
                 description="Existem vítimas?"
                 withAsterisk
+                value={temVitimas || ''}
+                onChange={(value) => setTemVitimas(value)}
               >
-                <Group mt="xs">
-                  <Checkbox value="Sim" label="Sim" />
-                  <Checkbox value="Não" label="Não" />
+                <Group mt="xs" justify="center">
+                  <Radio value="Sim" label="Sim" />
+                  <Radio value="Não" label="Não" />
                 </Group>
-              </Checkbox.Group>
+              </Radio.Group>
             </form>
           </Paper>
           {/* Registro de atendimento */}
