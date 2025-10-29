@@ -1,8 +1,22 @@
 .mainContent {
-    margin-left: 18.75em;
-    min-height: 100dvh;
     overflow-y: auto;
-    padding: 1.5em;
     display: flex;
     justify-content: center;
+    gap: 20px;
+    flex-direction: column;
+    width: 85%;
+    align-items: center;
+  }
+  
+.dashboardContainer {
+    width: 100%;
+    padding: 20px;
+    gap: 20px;
+  }
+  
+  .chartsGrid {
+    width: 100%;
+    gap: 20px;
+    margin-top: 20px;
+
   }
