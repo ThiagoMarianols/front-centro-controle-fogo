@@ -141,3 +141,7 @@
     padding: 0.6rem;
   }
 }
+
+.usuarios {
+  display: none;
+}

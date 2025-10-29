@@ -70,7 +70,7 @@ export async function activateOccurrence(id: number): Promise<void> {
   }
 }
 
-export async function getOccurrenceById(id: number): Promise<IOccurrenceDTO> {
+const getOccurrenceById = async (id: number): Promise<IOccurrenceDTO> => {
   const response = await fetch(`${API_URL}/${id}`, {
     method: 'GET',
     headers: getAuthHeaders(),
@@ -82,7 +82,46 @@ export async function getOccurrenceById(id: number): Promise<IOccurrenceDTO> {
   }
 
   return await response.json();
-}
+};
+
+const updateOccurrence = async (id: number, data: IOccurrenceRequest): Promise<void> => {
+  const headers = {
+    ...getAuthHeaders(),
+    'Content-Type': 'application/json'
+  };
+
+  console.log('Enviando requisição para:', `${API_URL}/${id}`);
+  console.log('Headers:', headers);
+  console.log('Payload:', JSON.stringify(data));
+
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    let errorMessage = 'Erro ao atualizar ocorrência';
+    try {
+      const errorData = await response.text();
+      console.error('Erro na resposta:', response.status, response.statusText);
+      console.error('Detalhes do erro:', errorData);
+      errorMessage = errorData || errorMessage;
+    } catch (e) {
+      console.error('Erro ao processar resposta de erro:', e);
+    }
+    throw new Error(errorMessage);
+  }
+
+  try {
+    // Tenta fazer o parse apenas se houver conteúdo na resposta
+    const responseText = await response.text();
+    return responseText ? JSON.parse(responseText) : undefined;
+  } catch (e) {
+    // Se não for possível fazer o parse, apenas retorna
+    return undefined;
+  }
+};
 
 export const occurrenceService = {
   async create(data: IOccurrenceRequest): Promise<string> {
@@ -114,4 +153,10 @@ export const occurrenceService = {
 
     return await response.text();
   },
+  
+  getById: getOccurrenceById,
+  update: updateOccurrence,
+  activate: activateOccurrence,
+  deactivate: deactivateOccurrence,
+  getOccurrencesPaginated: getOccurrencesPaginated,
 };

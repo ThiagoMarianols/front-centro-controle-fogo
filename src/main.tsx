@@ -25,6 +25,7 @@ import { RegistroBatalhao } from './pages/administracao/RegistroBatalhao.tsx'
 import { CadastroOcorrenciaSecun } from './pages/CadastroOcorrenciaSecun.tsx'
 import { DetalhesOcorrencia } from './pages/DetalhesOcorrencia.tsx'
 import { CompletarOcorrencia } from './pages/CompletarOcorrencia.tsx'
+import EditarOcorrencia from './pages/EditarOcorrencia.tsx'
 
 const router = createBrowserRouter([
   {
@@ -44,6 +45,7 @@ const router = createBrowserRouter([
       { path: 'RegistroOcorrencia', element: <ProtectedRoute><RegistroOcorrencia /></ProtectedRoute> },
       { path: 'administracao/RegistroBatalhao', element: <ProtectedRoute><RegistroBatalhao /></ProtectedRoute> },
       { path: 'administracao/CadastroOcorrenciaSecun', element: <ProtectedRoute><CadastroOcorrenciaSecun /></ProtectedRoute> },
+      { path: 'EditarOcorrencia/:id', element: <ProtectedRoute><EditarOcorrencia /></ProtectedRoute> },
     ],
   },
   {

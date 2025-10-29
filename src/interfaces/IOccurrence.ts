@@ -16,6 +16,14 @@ export interface IOccurrenceRequest {
   address: IAddress;
 }
 
+export interface IUpdateOccurrenceRequest extends IOccurrenceRequest {
+  occurrenceDetails: string;
+  latitude: number;
+  longitude: number;
+  occurrenceArrivalTime: string;
+  userIds: number[];
+}
+
 export interface IOccurrenceOnSiteRequest {
   occurrenceDetails: string;
   latitude: number;

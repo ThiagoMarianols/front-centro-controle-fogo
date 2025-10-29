@@ -1,11 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ReadItems } from '../components/ReadItems';
-import { 
-  getOccurrencesPaginated, 
-  deactivateOccurrence, 
-  activateOccurrence 
-} from '../services/occurrenceService';
+import { occurrenceService } from '../services/occurrenceService';
 import type { IOccurrenceDTO } from '../interfaces/IOccurrence';
 import { notifications } from '@mantine/notifications';
 import { Center, Loader } from '@mantine/core';
@@ -19,8 +15,8 @@ const Ocorrencia = () => {
     try {
       setLoading(true);
       const [activeResponse, inactiveResponse] = await Promise.all([
-        getOccurrencesPaginated(1, 100, undefined, true),
-        getOccurrencesPaginated(1, 100, undefined, false)
+        occurrenceService.getOccurrencesPaginated(1, 100, undefined, true),
+        occurrenceService.getOccurrencesPaginated(1, 100, undefined, false)
       ]);
       const allOccurrences = [...activeResponse.items, ...inactiveResponse.items];
       setOccurrences(allOccurrences);
@@ -70,7 +66,7 @@ const Ocorrencia = () => {
   const handleDeactivate = async (row: (string | number)[]) => {
     try {
       const id = Number(row[0]);
-      await deactivateOccurrence(id);
+      await occurrenceService.deactivate(id);
       notifications.show({
         title: 'Sucesso',
         message: 'Ocorrência desativada com sucesso',
@@ -89,7 +85,7 @@ const Ocorrencia = () => {
   const handleActivate = async (row: (string | number)[]) => {
     try {
       const id = Number(row[0]);
-      await activateOccurrence(id);
+      await occurrenceService.activate(id);
       notifications.show({
         title: 'Sucesso',
         message: 'Ocorrência ativada com sucesso',
@@ -102,6 +98,13 @@ const Ocorrencia = () => {
         message: 'Erro ao ativar ocorrência',
         color: 'red',
       });
+    }
+  };
+
+  const handleEdit = (row: (string | number)[]) => {
+    const id = row[0];
+    if (id) {
+      navigate(`/EditarOcorrencia/${id}`);
     }
   };
 
@@ -173,6 +176,7 @@ const Ocorrencia = () => {
           statusColumnIndex: 5,
           showAtendimento: true,
           onAtendimentoClick: handleAtendimentoClick,
+          onEdit: handleEdit,
           onDelete: handleDeactivate,
           onActivate: handleActivate
         }} 

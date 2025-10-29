@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Paper, Title, Button, Grid, Text, Badge, Loader, Center, Group, Divider, Card } from '@mantine/core';
 import { IconArrowLeft, IconMapPin, IconPhone, IconUser, IconClock, IconFileText, IconInfoCircle } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
-import { getOccurrenceById } from '../services/occurrenceService';
+import { occurrenceService } from '../services/occurrenceService';
 import type { IOccurrenceDTO } from '../interfaces/IOccurrence';
 import classes from '../styles/RegistroOcorrencia.module.css';
 
@@ -27,7 +27,7 @@ export function DetalhesOcorrencia() {
 
       try {
         setLoading(true);
-        const data = await getOccurrenceById(Number(id));
+        const data = await occurrenceService.getById(Number(id));
         setOccurrence(data);
       } catch (error) {
         notifications.show({
