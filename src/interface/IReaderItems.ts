@@ -8,7 +8,7 @@ export interface ParamsReaderItems {
   onAtendimentoClick?: (item: any) => void;
   onDelete?: (row: (string | number)[], index: number) => Promise<void>;
   onActivate?: (row: (string | number)[], index: number) => Promise<void>;
-  onEdit?: (row: (string | number)[]) => void;
+  onEdit?: (row: (string | number)[], index: number) => void;
   statusColumnIndex?: number;
   hasStatusFilter?: boolean;
 }
