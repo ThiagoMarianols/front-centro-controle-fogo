@@ -41,7 +41,7 @@ const router = createBrowserRouter([
       { path: 'dashboard', element: <ProtectedRoute><Dashboard /></ProtectedRoute> },
       { path: 'Ocorrencia', element: <ProtectedRoute><Ocorrencia /></ProtectedRoute> },
       { path: 'DetalhesOcorrencia/:id', element: <ProtectedRoute><DetalhesOcorrencia /></ProtectedRoute> },
-      { path: 'CompletarOcorrencia', element: <ProtectedRoute><CompletarOcorrencia /></ProtectedRoute> },
+      { path: 'CompletarOcorrencia/:id', element: <ProtectedRoute><CompletarOcorrencia /></ProtectedRoute> },
       { path: 'RegistroOcorrencia', element: <ProtectedRoute><RegistroOcorrencia /></ProtectedRoute> },
       { path: 'administracao/RegistroBatalhao', element: <ProtectedRoute><RegistroBatalhao /></ProtectedRoute> },
       { path: 'administracao/CadastroOcorrenciaSecun', element: <ProtectedRoute><CadastroOcorrenciaSecun /></ProtectedRoute> },

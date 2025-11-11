@@ -48,7 +48,7 @@ export async function getOccurrencesPaginated(
 
 export async function deactivateOccurrence(id: number): Promise<void> {
   const response = await fetch(`${API_URL}/deactivate/${id}`, {
-    method: 'PUT',
+    method: 'PATCH',
     headers: getAuthHeaders(),
   });
 
@@ -60,7 +60,7 @@ export async function deactivateOccurrence(id: number): Promise<void> {
 
 export async function activateOccurrence(id: number): Promise<void> {
   const response = await fetch(`${API_URL}/activate/${id}`, {
-    method: 'PUT',
+    method: 'PATCH',
     headers: getAuthHeaders(),
   });
 
@@ -95,7 +95,7 @@ const updateOccurrence = async (id: number, data: IOccurrenceRequest): Promise<v
   console.log('Payload:', JSON.stringify(data));
 
   const response = await fetch(`${API_URL}/${id}`, {
-    method: 'PUT',
+    method: 'PATCH',
     headers,
     body: JSON.stringify(data),
   });
@@ -141,7 +141,7 @@ export const occurrenceService = {
 
   async complete(id: number, data: IOccurrenceOnSiteRequest): Promise<string> {
     const response = await fetch(`${API_URL}/complete/${id}`, {
-      method: 'PUT',
+      method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });

@@ -130,7 +130,7 @@ const Ocorrencia = () => {
       return;
     }
     
-    navigate('/CompletarOcorrencia', { 
+    navigate(`/CompletarOcorrencia/${item[0]}`, { 
       state: { 
         itemId: item[0], 
       } 
