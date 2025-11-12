@@ -27,7 +27,7 @@ export const mockOccurrences: Occurrence[] = [
   // ATENDIMENTO PRÉ-HOSPITALAR (1)
   {
     id: 1,
-    title: 'Atropelamento de Motociclista',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Acidente com vítima atropelada na Av. Boa Viagem, altura do número 1000.',
     latitude: -8.1137,
     longitude: -34.9665,
@@ -48,7 +48,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 2,
-    title: 'Queda de Altura',
+    title: 'Atividade Comunitaria',
     description: 'Queda de trabalhador em obra no 5º andar de prédio em construção.',
     latitude: -8.0522,
     longitude: -34.9286,
@@ -68,7 +68,7 @@ export const mockOccurrences: Occurrence[] = [
   // ATENDIMENTO MÉDICO (2)
   {
     id: 3,
-    title: 'Dor no Peito',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Idoso de 72 anos com queixa de dor torácica intensa.',
     latitude: -8.0174,
     longitude: -34.9185,
@@ -86,7 +86,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 4,
-    title: 'Convulsão',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Paciente em crise convulsiva na praça de alimentação do shopping.',
     latitude: -8.0461,
     longitude: -34.9527,
@@ -104,7 +104,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 5,
-    title: 'Acidente de Trânsito',
+    title: 'Atividade Comunitaria',
     description: 'Colisão entre carro e moto na Av. Caxangá.',
     latitude: -8.0455,
     longitude: -34.9289,
@@ -122,7 +122,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 6,
-    title: 'Árvore Tombada',
+    title: 'Prevencao',
     description: 'Árvore tombou após chuva na Rua Benfica, bloqueando via.',
     latitude: -8.0564,
     longitude: -34.9027,
@@ -140,7 +140,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 7,
-    title: 'Incêndio Residencial',
+    title: 'Incendio',
     description: 'Pequeno incêndio em cozinha de residência na Rua da Aurora.',
     latitude: -8.0631,
     longitude: -34.8809,
@@ -158,7 +158,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 8,
-    title: 'Desmaio em Local Público',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Pessoa desmaiou no Terminal Integrado de Passageiros.',
     latitude: -8.0642,
     longitude: -34.8738,
@@ -176,7 +176,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 9,
-    title: 'Assalto a Pedestre',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Assalto a pedestre nas proximidades do Parque da Jaqueira.',
     latitude: -8.0396,
     longitude: -34.9113,
@@ -194,7 +194,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 10,
-    title: 'Colisão na BR-101',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Colisão entre dois veículos na BR-101, sentido Sul, próximo ao Shopping Recife.',
     latitude: -8.1181,
     longitude: -34.9083,
@@ -284,7 +284,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 15,
-    title: 'Intoxicação por Produto Químico',
+    title: 'Produto Perigoso',
     description: 'Criança de 4 anos intoxicada por ingestão acidental de produto de limpeza em residência.',
     latitude: -8.0289,
     longitude: -34.9448,
@@ -410,7 +410,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 22,
-    title: 'Incêndio',
+    title: 'Incendio',
     description: 'Bairro de Jardim São Paulo sem energia elétrica.',
     latitude: -8.0955,
     longitude: -34.9515,
@@ -428,7 +428,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 23,
-    title: 'Acidente',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Suspeita de artefato em área pública isolada.',
     latitude: -8.0509,
     longitude: -34.8835,
@@ -446,7 +446,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 24,
-    title: 'Acidente',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Túnel próximo à Av. Agamenon interditado.',
     latitude: -8.0478,
     longitude: -34.8932,
@@ -464,7 +464,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 25,
-    title: 'Acidente',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Estação Joana Bezerra com operação suspensa.',
     latitude: -8.0693,
     longitude: -34.8902,
@@ -482,7 +482,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 26,
-    title: 'Incêndio',
+    title: 'Incendio',
     description: 'Chamas avistadas em Olinda.',
     latitude: -7.9998,
     longitude: -34.8555,
@@ -500,7 +500,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 27,
-    title: 'Acidente',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Equipe de resgate atua no bairro de Areias.',
     latitude: -8.0949,
     longitude: -34.9365,
@@ -518,7 +518,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 28,
-    title: 'Acidente',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Ocorrência dentro de ônibus na Av. Norte.',
     latitude: -8.0112,
     longitude: -34.9065,
@@ -536,7 +536,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 29,
-    title: 'Acidente',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Troca de tiros no Ibura, sem feridos.',
     latitude: -8.1302,
     longitude: -34.9508,
@@ -554,7 +554,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 30,
-    title: 'Acidente',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Trecho interditado na Imbiribeira.',
     latitude: -8.0977,
     longitude: -34.9105,
@@ -572,7 +572,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 31,
-    title: 'Incêndio',
+    title: 'Incendio',
     description: 'Carro pega fogo na BR-101, próximo a Prazeres.',
     latitude: -8.1511,
     longitude: -34.9502,
@@ -590,7 +590,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 32,
-    title: 'Acidente',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Motociclista perdeu o controle em Olinda.',
     latitude: -7.9925,
     longitude: -34.8551,
@@ -608,7 +608,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 33,
-    title: 'Acidente',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Invasão de domicílio em Jardim Atlântico.',
     latitude: -7.9862,
     longitude: -34.8388,
@@ -626,7 +626,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 34,
-    title: 'Acidente',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Muro cedeu após chuva em Peixinhos.',
     latitude: -8.0157,
     longitude: -34.8712,
@@ -644,7 +644,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 35,
-    title: 'Acidente',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Bairros de Camaragibe sem energia.',
     latitude: -8.0215,
     longitude: -35.0107,
@@ -662,7 +662,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 36,
-    title: 'Acidente',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Batida entre carros em Piedade.',
     latitude: -8.1725,
     longitude: -34.9323,
@@ -680,7 +680,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 37,
-    title: 'Incêndio',
+    title: 'Incendio',
     description: 'Curto interno em condomínio em Boa Viagem.',
     latitude: -8.1177,
     longitude: -34.8982,
@@ -698,7 +698,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 38,
-    title: 'Acidente',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Trânsito lento em Abreu e Lima.',
     latitude: -7.9115,
     longitude: -34.9087,
@@ -716,7 +716,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 39,
-    title: 'Acidente',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Troca de tiros em Prazeres, sem vítimas.',
     latitude: -8.1677,
     longitude: -34.9402,
@@ -734,7 +734,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 40,
-    title: 'Acidente',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Suspeitos detidos em operação na Cohab.',
     latitude: -8.1555,
     longitude: -34.9368,
@@ -752,7 +752,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 41,
-    title: 'Acidente',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Carro suspeito encontrado em Sancho.',
     latitude: -8.0892,
     longitude: -34.9405,
@@ -770,7 +770,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 42,
-    title: 'Acidente',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Barreira deslizou parcialmente em Camaragibe.',
     latitude: -8.0305,
     longitude: -35.0022,
@@ -788,7 +788,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 43,
-    title: 'Incêndio',
+    title: 'Incendio',
     description: 'Moradores evacuados em Olinda.',
     latitude: -8.0047,
     longitude: -34.8528,
@@ -806,7 +806,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 44,
-    title: 'Interdição na UFPE',
+    title: 'Prevencao',
     description: 'Interdição parcial na UFPE devido a alagamento.',
     latitude: -8.0509,
     longitude: -34.9512,
@@ -824,7 +824,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 45,
-    title: 'Incêndio em Transformador',
+    title: 'Incendio',
     description: 'Explosão em transformador em Boa Viagem.',
     latitude: -8.1202,
     longitude: -34.9041,
@@ -842,7 +842,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 46,
-    title: 'Ocorrência em Shopping',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Queda de energia no Shopping Center Recife.',
     latitude: -8.1614,
     longitude: -34.9266,
@@ -860,7 +860,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 47,
-    title: 'Falha na Rede Elétrica',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Falha em rede elétrica em Paulista.',
     latitude: -7.9441,
     longitude: -34.8759,
@@ -878,7 +878,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 48,
-    title: 'Queda de Estrutura',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Estrutura caiu em prédio antigo no Recife Antigo.',
     latitude: -8.0628,
     longitude: -34.8831,
@@ -896,7 +896,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 49,
-    title: 'Falha na Iluminação',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Intermitência em luzes na Av. Norte.',
     latitude: -8.0222,
     longitude: -34.9141,
@@ -914,7 +914,7 @@ export const mockOccurrences: Occurrence[] = [
   },
   {
     id: 50,
-    title: 'Atropelamento de Ciclista',
+    title: 'Atendimento Pre Hospitalar',
     description: 'Ciclista ferido em cruzamento no Derby após colisão com carro.',
     latitude: -8.0581,
     longitude: -34.8985,

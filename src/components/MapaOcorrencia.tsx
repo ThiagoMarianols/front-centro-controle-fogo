@@ -7,9 +7,13 @@ import { IconClipboardList } from '@tabler/icons-react';
 import { mockOccurrences } from '../mock/occurrences';
 import 'leaflet/dist/leaflet.css';
 import classes from '../styles/MapaOcorrencia.module.css';
+import AtendimentoPreHospitalar from '../assets/img/Icons/pins/AtenPreHosp.png';
+import AtividadeComunitaria from '../assets/img/Icons/pins/AtivComun.png';
+import Incendio from '../assets/img/Icons/pins/Incendio.png';
+import Prevencao from '../assets/img/Icons/pins/Pevencao.png';
+import ProdutoPerigoso from '../assets/img/Icons/pins/ProdPerig.png';
+import Salvamento from '../assets/img/Icons/pins/Salvamento.png';
 import pin from '../assets/img/Icons/pin2.png';
-import type { ParamsReaderItems } from '../interface/IReaderItems';
-
 
 
 // Correção para os ícones padrão de marcadores no React-Leaflet
@@ -22,9 +26,13 @@ L.Icon.Default.mergeOptions({
 
 // Ícone personalizado para os marcadores
 const getIconByType = (title: string) => {
-  if (title.includes('Incêndio')) return L.icon({ iconUrl: pin, iconSize: [32, 32] });
-  if (title.includes('Acidente')) return L.icon({ iconUrl: pin, iconSize: [32, 32] });
-  return L.icon({ iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png', iconSize: [32, 32] });
+  if (title.includes('Atendimento Pre Hospitalar')) return L.icon({ iconUrl: AtendimentoPreHospitalar, iconSize: [64, 64] });
+  if (title.includes('Atividade Comunitaria')) return L.icon({ iconUrl: AtividadeComunitaria, iconSize: [64, 64] });
+  if (title.includes('Incendio')) return L.icon({ iconUrl: Incendio, iconSize: [64, 64] });
+  if (title.includes('Prevencao')) return L.icon({ iconUrl: Prevencao, iconSize: [64, 64] });
+  if (title.includes('Produto Perigoso')) return L.icon({ iconUrl: ProdutoPerigoso, iconSize: [64, 64] });
+  if (title.includes('Salvamento')) return L.icon({ iconUrl: Salvamento, iconSize: [64, 64] });
+  return L.icon({ iconUrl: pin, iconSize: [50, 50] });
 };
 
 

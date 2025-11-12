@@ -125,18 +125,44 @@ const updateOccurrence = async (id: number, data: IOccurrenceRequest): Promise<v
 
 export const occurrenceService = {
   async create(data: IOccurrenceRequest): Promise<string> {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(data),
-    });
+    try {
+      const rawHeaders = getAuthHeaders() as Record<string, string>;
+      const maskedHeaders = {
+        ...rawHeaders,
+        Authorization: rawHeaders?.['Authorization']
+          ? `Bearer ${rawHeaders['Authorization'].slice(7, 11)}***`
+          : undefined,
+      };
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText || 'Erro ao criar ocorrência');
+      console.log('Criar ocorrência - URL:', API_URL);
+      console.log('Criar ocorrência - Headers:', maskedHeaders);
+      console.log('Criar ocorrência - Payload:', JSON.stringify(data));
+
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: rawHeaders,
+        body: JSON.stringify(data),
+      });
+
+      console.log('Criar ocorrência - Status:', response.status, response.statusText);
+      try {
+        const preview = await response.clone().text();
+        console.log('Criar ocorrência - Corpo resposta (preview):', preview);
+      } catch (e) {
+        console.log('Criar ocorrência - Falha ao ler corpo de resposta para preview:', e);
+      }
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Criar ocorrência - Erro:', errorText);
+        throw new Error(errorText || 'Erro ao criar ocorrência');
+      }
+
+      return await response.text();
+    } catch (err) {
+      console.error('Criar ocorrência - Falha na requisição:', err);
+      throw err instanceof Error ? err : new Error('Erro desconhecido ao criar ocorrência');
     }
-
-    return await response.text();
   },
 
   async complete(id: number, data: IOccurrenceOnSiteRequest): Promise<string> {

@@ -1,7 +1,7 @@
 export interface IAddress {
   zipCode: string;
   street: string;
-  number: string;
+  number: number;
   neighborhood: string;
   city: string;
   state: string;
@@ -12,7 +12,7 @@ export interface IOccurrenceRequest {
   occurrenceHasVictims: boolean;
   occurrenceRequester: string;
   occurrenceRequesterPhoneNumber: string;
-  occurrenceSubType: string;
+  occurrenceSubType: number;
   address: IAddress;
 }
 
