@@ -13,6 +13,10 @@ import logoCCF from '../assets/img/LogoCCF3.png';
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useMediaQuery } from '@mantine/hooks';
+import { logoutService } from '../services/authService';
+
+
+
 const mockdata = [
   { label: 'Ocorrencias', icon: IconNotes, link: '/Ocorrencia'  },
   { label: 'Relatórios', icon: IconFileAnalytics, link: 'administracao/Relatorios' },
@@ -109,9 +113,12 @@ export function NavBar2() {
             type="button"
             aria-label="Sair"
             className={classes.logout}
-            onClick={() => {
-              setIsOpen(false);
-              navigate('/login');
+            onClick={async () => {
+              const response = await logoutService();
+              if (response === 200) {
+                localStorage.clear();
+                navigate('/login');
+              }
             }}
           >
             <IconLogout className={classes.linkIcon} stroke={1.5} />

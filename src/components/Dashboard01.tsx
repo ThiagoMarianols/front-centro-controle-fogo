@@ -20,10 +20,14 @@ const data = [
   { title: 'Ocorrências do Ano', icon: 'receipt', value: '13,456', diff: 50 },
   { title: 'Ocorrências do Mês', icon: 'coin', value: '4,145', diff: -13 },
   { title: 'Ocorrências da Semana', icon: 'discount', value: '745', diff: 18 },
-  { title: 'Ocorrências ', icon: 'user', value: '188', diff: -30 },
+  { title: 'Ocorrências do Dia', icon: 'user', value: '188', diff: -30 },
 ] as const;
 
-export function Dashboard01() {
+type Dashboard01Props = {
+  statusFilter: string | null;
+};
+
+export function Dashboard01({ statusFilter }: Dashboard01Props) {
   const stats = data.map((stat) => {
     const Icon = icons[stat.icon];
     const DiffIcon = stat.diff > 0 ? IconArrowUpRight : IconArrowDownRight;

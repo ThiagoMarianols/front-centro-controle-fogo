@@ -1,0 +1,27 @@
+.root {
+
+    display: flex;
+    gap: 8px;
+    height: 100%;
+    width: 100%;
+    flex-direction: column;
+    background-color: transparent;
+    }
+
+.legendTitle {
+    font-weight: 60;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 8px;
+    }
+
+.recharts-legend-wrapper {
+    justify-content: center;
+    width: 100%;
+    flex-direction: row;
+    }
+
+.legendItemName {
+    font-size: 14px;
+    }
+

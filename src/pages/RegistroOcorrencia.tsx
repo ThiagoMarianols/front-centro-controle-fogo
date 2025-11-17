@@ -1,17 +1,27 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import classes from '../styles/RegistroOcorrencia.module.css';
 import {  
   Select,
-  Checkbox,
-  Group,
   TextInput,
   Paper,
   Title,
-  Button 
+  Button,
+  Group,
+  Radio
 } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
+import { occurrenceService } from '../services/occurrenceService';
+import type { IOccurrenceRequest } from '../interfaces/IOccurrence';
 
 export function RegistroOcorrencia() {
+  const navigate = useNavigate();
   const [cep, setCep] = useState('');
+  const [temVitimas, setTemVitimas] = useState<string | null>(null);
+  const [nomeSolicitante, setNomeSolicitante] = useState('');
+  const [telefoneSolicitante, setTelefoneSolicitante] = useState('');
+  const [tipoOcorrencia, setTipoOcorrencia] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const [endereco, setEndereco] = useState({
     logradouro: '',
     bairro: '',
@@ -49,7 +59,6 @@ export function RegistroOcorrencia() {
     }
   }
 
-  // Função para limpar os campos de endereço
   function limparEndereco() {
     setEndereco({
       logradouro: '',
@@ -59,6 +68,86 @@ export function RegistroOcorrencia() {
       complemento: '',
       numero: ''
     });
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (!nomeSolicitante || !telefoneSolicitante || !tipoOcorrencia || temVitimas === null) {
+      notifications.show({
+        title: 'Erro',
+        message: 'Preencha todos os campos obrigatórios',
+        color: 'red'
+      });
+      return;
+    }
+
+    // telefone deve ter 10 (fixo) ou 11 (celular) dígitos
+    if (!(telefoneSolicitante.length === 10 || telefoneSolicitante.length === 11)) {
+      notifications.show({
+        title: 'Telefone inválido',
+        message: 'Informe um telefone com DDD (10 ou 11 dígitos). Ex: (81) 98765-8765',
+        color: 'red'
+      });
+      return;
+    }
+
+    if (!endereco.logradouro || !endereco.numero || !endereco.bairro || !endereco.cidade || !endereco.estado) {
+      notifications.show({
+        title: 'Erro',
+        message: 'Preencha todos os campos de endereço',
+        color: 'red'
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const payload: IOccurrenceRequest = {
+        occurrenceHasVictims: temVitimas === 'Sim',
+        occurrenceRequester: nomeSolicitante,
+        occurrenceRequesterPhoneNumber: telefoneSolicitante,
+        occurrenceSubType: tipoOcorrencia,
+        address: {
+          zipCode: cep.replace(/\D/g, ''),
+          street: endereco.logradouro,
+          number: endereco.numero,
+          neighborhood: endereco.bairro,
+          city: endereco.cidade,
+          state: endereco.estado,
+          complement: endereco.complemento
+        }
+      };
+
+      await occurrenceService.create(payload);
+
+      notifications.show({
+        title: 'Sucesso',
+        message: 'Ocorrência criada com sucesso',
+        color: 'green'
+      });
+
+      // Redirecionar para a lista de ocorrências
+      navigate('/Ocorrencia');
+    } catch (error) {
+      notifications.show({
+        title: 'Erro',
+        message: error instanceof Error ? error.message : 'Erro ao conectar com o servidor',
+        color: 'red'
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function formatPhone(value: string) {
+    const digits = value.replace(/\D/g, '').slice(0, 11);
+    if (digits.length === 0) return '';
+    if (digits.length <= 2) return `(${digits}`;
+    if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
   }
 
   return (
@@ -74,10 +163,17 @@ export function RegistroOcorrencia() {
               <TextInput
                 label="Nome do solicitante"
                 placeholder="Nome do solicitante"
+                value={nomeSolicitante}
+                onChange={(e) => setNomeSolicitante(e.target.value)}
+                required
               />
               <TextInput
                 label="Telefone"
-                placeholder="Telefone"
+                placeholder="(00) 00000-0000"
+                value={formatPhone(telefoneSolicitante)}
+                onChange={(e) => setTelefoneSolicitante(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                required
+                inputMode="tel"
               />
             </div>
           </Paper>
@@ -164,11 +260,13 @@ export function RegistroOcorrencia() {
           {/* Dados da ocorrência */}
           <Paper withBorder shadow="sm" p="md" radius="md" className={classes.paper}>
             <Title order={3} className={classes.cardTitle}>Dados da ocorrência</Title>
-            <form className={classes.form} onSubmit={(e) => e.preventDefault()}>
+            <form className={classes.form}>
               <Select
                 className={classes.fullWidthField}
                 label="Tipo de Ocorrência"
                 placeholder="Informe o tipo de ocorrência"
+                value={tipoOcorrencia}
+                onChange={setTipoOcorrencia}
                 data={[
                   'Incêndio urbano',
                   'Acidente de trânsito',
@@ -176,24 +274,34 @@ export function RegistroOcorrencia() {
                   'Afogamento',
                   'Acidente com produtos perigosos'
                 ]}
+                required
               />
 
-              <Checkbox.Group
+              <Radio.Group
                 className={classes.fullWidthField}
                 label="Existência de vítimas"
                 description="Existem vítimas?"
                 withAsterisk
+                value={temVitimas || ''}
+                onChange={(value) => setTemVitimas(value)}
               >
-                <Group mt="xs">
-                  <Checkbox value="Sim" label="Sim" />
-                  <Checkbox value="Não" label="Não" />
+                <Group mt="xs" justify="center">
+                  <Radio value="Sim" label="Sim" />
+                  <Radio value="Não" label="Não" />
                 </Group>
-              </Checkbox.Group>
+              </Radio.Group>
             </form>
           </Paper>
         </div>
 
-        <Button variant="filled" className={classes.button}>Registrar</Button>
+        <Button 
+          variant="filled" 
+          className={classes.button}
+          onClick={handleSubmit}
+          loading={loading}
+        >
+          Registrar
+        </Button>
       </div>
     </>
   );

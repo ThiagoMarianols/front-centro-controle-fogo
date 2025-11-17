@@ -1,0 +1,338 @@
+.mainContent {
+  width: 100%;
+  min-height: 100vh;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.centerWrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1200px;
+  padding: 1rem;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: 1.75rem;
+  text-align: center;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.cardsStack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 800px;
+}
+
+.paper {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  margin-bottom: 1.25rem;
+  color: #2c3e50;
+}
+
+.formGrid {
+  width: 100%;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+  transition: all 0.3s ease;
+}
+
+.fullWidthField {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.button {
+  width: 100%;
+  max-width: 300px;
+  margin: 1rem auto;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+@media (min-width: 600px) {
+  .formGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .title {
+    font-size: 2rem;
+  }
+  
+  .cardTitle {
+    font-size: 1.5rem;
+  }
+}
+
+@media (min-width: 900px) {
+  .mainContent {
+    padding: 2rem;
+  }
+  
+  .centerWrap {
+    padding: 2rem;
+  }
+  
+  .cardsStack {
+    gap: 2rem;
+  }
+  
+  .formGrid {
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .formGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .fullWidthField {
+    grid-column: span 2;
+  }
+}
+
+@media (min-width: 1600px) {
+  .centerWrap {
+    max-width: 1400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .modalRoot {
+    padding: 8px;
+  }
+  
+  .modalContent {
+    max-height: 100%;
+    border-radius: 0;
+  }
+  
+  .modalHeader {
+    padding: 12px 16px;
+  }
+  
+  .modalBody {
+    max-height: calc(100vh - 120px);
+  }
+  
+  .modalImageContainer {
+    padding: 12px;
+    min-height: 150px;
+  }
+  
+  .modalFilename {
+    font-size: 10px;
+    padding: 3px 8px;
+    max-width: 70%;
+  }
+}
+
+@media (max-width: 400px) {
+  .mainContent {
+    padding: 0.5rem;
+  }
+  
+  .centerWrap {
+    padding: 0.75rem;
+  }
+  
+  .title {
+    font-size: 1.5rem;
+  }
+  
+  .cardTitle {
+    font-size: 1.1rem;
+  }
+  
+  .button {
+    font-size: 0.9rem;
+    padding: 0.6rem;
+  }
+}
+
+/* Estilos para a lista de anexos */
+.attachmentsContainer {
+  margin-top: 16px;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.attachmentsHeader {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  background-color: #f8f9fa;
+  padding: 8px 16px;
+  border-bottom: 1px solid #e9ecef;
+  font-weight: 600;
+  font-size: 14px;
+  color: #495057;
+}
+
+.attachmentsList {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.noAttachments {
+  padding: 16px;
+  text-align: center;
+  color: #868e96;
+  font-style: italic;
+}
+
+.attachmentItem {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e9ecef;
+  transition: background-color 0.2s;
+}
+
+.attachmentItem:hover {
+  background-color: #f8f9fa;
+}
+
+.attachmentItem:last-child {
+  border-bottom: none;
+}
+
+/* Estilos do modal de visualização de imagem */
+.modalRoot {
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modalContent {
+  max-height: 95vh;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.modalHeader {
+  margin: 0;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.modalBody {
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 200px;
+  max-height: calc(95vh - 70px);
+}
+
+.modalImageContainer {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f8f9fa;
+  position: relative;
+  min-height: 200px;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+.modalImageWrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.modalImage {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+  border-radius: 4px;
+  margin: 0 auto;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.modalFilename {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0,0,0,0.7);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 2;
+  max-width: calc(100% - 40px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.attachmentName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 8px;
+}
+
+.attachmentIcon {
+  min-width: 24px;
+  color: #4dabf7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.attachmentText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachmentActions {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+

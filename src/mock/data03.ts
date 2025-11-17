@@ -1,5 +1,5 @@
 export const data = [
-  { month: 'Janeiro', Ocorrencias: 1200, Afogamento: 900, Desastres: 200 },
+  { month: 'Janeiro', Ocorrencias: 2500, Afogamento: 900, Desastres: 2000 },
   { month: 'Fevereiro', Ocorrencias: 1900, Afogamento: 1200, Desastres: 400 },
   { month: 'Março', Ocorrencias: 400, Afogamento: 1000, Desastres: 200 },
   { month: 'Abril', Ocorrencias: 1000, Afogamento: 200, Desastres: 800 },
