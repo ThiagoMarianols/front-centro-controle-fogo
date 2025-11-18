@@ -143,7 +143,7 @@ export function ReadItems({ paramsReaderItems }: { paramsReaderItems: ParamsRead
                                 variant="light"
                                 color="green"
                                 size="xs"
-                                onClick={() => paramsReaderItems.onAtendimentoClick?.(row)}
+                                onClick={(e) => { e.stopPropagation(); paramsReaderItems.onAtendimentoClick?.(row); }}
                               >
                                 Atendimento
                               </Button>

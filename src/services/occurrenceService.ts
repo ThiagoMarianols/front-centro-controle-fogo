@@ -1,4 +1,4 @@
-import type { IOccurrenceRequest, IOccurrenceOnSiteRequest, IPaginatedResponse, IOccurrenceDTO } from '../interfaces/IOccurrence';
+import type { IOccurrenceRequest, IOccurrenceOnSiteRequest, IPaginatedResponse, IOccurrenceDTO, IUpdateOccurrenceRequest } from '../interfaces/IOccurrence';
 
 const API_URL = `${import.meta.env.VITE_BASE_URL}/occurrences`;
 
@@ -84,7 +84,7 @@ const getOccurrenceById = async (id: number): Promise<IOccurrenceDTO> => {
   return await response.json();
 };
 
-const updateOccurrence = async (id: number, data: IOccurrenceRequest): Promise<void> => {
+const updateOccurrence = async (id: number, data: IUpdateOccurrenceRequest): Promise<void> => {
   const headers = {
     ...getAuthHeaders(),
     'Content-Type': 'application/json'
@@ -95,7 +95,7 @@ const updateOccurrence = async (id: number, data: IOccurrenceRequest): Promise<v
   console.log('Payload:', JSON.stringify(data));
 
   const response = await fetch(`${API_URL}/${id}`, {
-    method: 'PATCH',
+    method: 'PUT',
     headers,
     body: JSON.stringify(data),
   });
@@ -138,7 +138,7 @@ export const occurrenceService = {
       console.log('Criar ocorrência - Headers:', maskedHeaders);
       console.log('Criar ocorrência - Payload:', JSON.stringify(data));
 
-      const response = await fetch(API_URL, {
+      const response = await fetch(`${API_URL}/register`, {
         method: 'POST',
         headers: rawHeaders,
         body: JSON.stringify(data),

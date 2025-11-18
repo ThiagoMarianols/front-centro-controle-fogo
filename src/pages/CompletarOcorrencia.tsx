@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import classes from '../styles/RegistroOcorrencia.module.css';
 import { TextInput, Button, Paper, Title, Textarea, MultiSelect, Loader } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
@@ -14,7 +14,8 @@ dayjs.locale('pt-br');
 export function CompletarOcorrencia() {
   const location = useLocation();
   const navigate = useNavigate();
-  const occurrenceId = location.state?.itemId;
+  const { id } = useParams<{ id: string }>();
+  const occurrenceId = location.state?.itemId ?? (id ? Number(id) : undefined);
 
   const [occurrenceDetails, setOccurrenceDetails] = useState('');
   const [latitude, setLatitude] = useState('');

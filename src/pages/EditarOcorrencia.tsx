@@ -30,6 +30,7 @@ export default function EditarOcorrencia() {
   const [nomeSolicitante, setNomeSolicitante] = useState('');
   const [telefoneSolicitante, setTelefoneSolicitante] = useState('');
   const [tipoOcorrencia, setTipoOcorrencia] = useState<string>('');
+  const [subtipoId, setSubtipoId] = useState<string>('');
   const [occurrenceDetails, setOccurrenceDetails] = useState<string>('Detalhes da ocorrência');
   const [userIds, setUserIds] = useState<string[]>([]);
   const [availableUsers, setAvailableUsers] = useState<{value: string, label: string}[]>([]);
@@ -40,6 +41,8 @@ export default function EditarOcorrencia() {
     latitude: -8.052240, // Valor padrão para testes
     longitude: -34.928610 // Valor padrão para testes
   });
+  const [statusId, setStatusId] = useState<string>('');
+  const [vehiclesInput, setVehiclesInput] = useState<string>('');
   const [endereco, setEndereco] = useState<{
     cep: string;
     logradouro: string;
@@ -95,17 +98,20 @@ export default function EditarOcorrencia() {
       setNomeSolicitante(occurrence.occurrenceRequester);
       setTelefoneSolicitante(occurrence.occurrenceRequesterPhoneNumber);
       setTipoOcorrencia(occurrence.occurrenceSubType);
+      setSubtipoId(''); // ID numérico do subtipo deverá ser informado manualmente
       setTemVitimas(occurrence.occurrenceHasVictims !== undefined ? (occurrence.occurrenceHasVictims ? 'Sim' : 'Não') : 'Não');
       
+      const addr = (occurrence as any)?.address;
       setEndereco({
-        cep: occurrence.zipCode || '',
-        logradouro: occurrence.street || '',
-        numero: occurrence.number || '',
-        bairro: occurrence.neighborhood || '',
-        cidade: occurrence.city || '',
-        estado: occurrence.state || '',
-        complemento: occurrence.complement || ''
+        cep: addr?.zipCode || (occurrence as any).zipCode || '',
+        logradouro: addr?.street || (occurrence as any).street || '',
+        numero: (addr?.number ?? (occurrence as any).number ?? '').toString(),
+        bairro: addr?.neighborhood || (occurrence as any).neighborhood || '',
+        cidade: addr?.city || (occurrence as any).city || '',
+        estado: addr?.state || (occurrence as any).state || '',
+        complemento: addr?.complement || (occurrence as any).complement || ''
       });
+      setStatusId(''); // Status numérico deverá ser informado manualmente
     } catch (error) {
       notifications.show({
         title: 'Erro',
@@ -180,7 +186,7 @@ export default function EditarOcorrencia() {
       { nome: 'ID', valor: id },
       { nome: 'Nome do Solicitante', valor: nomeSolicitante },
       { nome: 'Telefone', valor: telefoneSolicitante },
-      { nome: 'Tipo de Ocorrência', valor: tipoOcorrencia },
+      { nome: 'Subtipo (ID numérico)', valor: subtipoId },
       { nome: 'Tem Vítimas', valor: temVitimas },
       { nome: 'Detalhes da Ocorrência', valor: occurrenceDetails },
       { nome: 'Latitude', valor: coordinates.latitude },
@@ -189,7 +195,8 @@ export default function EditarOcorrencia() {
       { nome: 'Número', valor: endereco.numero },
       { nome: 'Bairro', valor: endereco.bairro },
       { nome: 'Cidade', valor: endereco.cidade },
-      { nome: 'Estado', valor: endereco.estado }
+      { nome: 'Estado', valor: endereco.estado },
+      { nome: 'Status (ID numérico)', valor: statusId }
     ];
     
     const camposFaltantes = camposObrigatorios.filter(campo => !campo.valor);
@@ -224,20 +231,34 @@ export default function EditarOcorrencia() {
       if (isNaN(coordinates.latitude!) || isNaN(coordinates.longitude!)) {
         throw new Error('Coordenadas inválidas');
       }
+      // Parse da lista de veículos (IDs separados por vírgula)
+      const vehicles: number[] | undefined = vehiclesInput
+        ? vehiclesInput.split(',')
+            .map(v => Number(v.trim()))
+            .filter(v => !isNaN(v))
+        : undefined;
+
+      const statusNumber = Number(statusId);
+      if (isNaN(statusNumber)) {
+        throw new Error('Status deve ser um número válido');
+      }
+
       const payload: IUpdateOccurrenceRequest = {
         occurrenceHasVictims: temVitimas === 'Sim',
         occurrenceRequester: nomeSolicitante.trim(),
         occurrenceRequesterPhoneNumber: telefoneSolicitante.replace(/\D/g, ''),
-        occurrenceSubType: tipoOcorrencia,
+        occurrenceSubType: Number(subtipoId),
         occurrenceDetails: occurrenceDetails.trim(),
         occurrenceArrivalTime: new Date(occurrenceArrivalTime).toISOString(),
         latitude: coordinates.latitude!,
         longitude: coordinates.longitude!,
         userIds: userIds.map(id => Number(id)),
+        vehicles,
+        status: statusNumber,
         address: {
           zipCode: endereco.cep.replace(/\D/g, ''),
           street: endereco.logradouro.trim(),
-          number: endereco.numero.trim(),
+          number: Number(endereco.numero.trim()),
           neighborhood: endereco.bairro.trim(),
           city: endereco.cidade.trim(),
           state: endereco.estado.trim().toUpperCase(),
@@ -419,20 +440,20 @@ export default function EditarOcorrencia() {
           <Title order={3} className={classes.cardTitle}>Detalhes da ocorrência</Title>
           <div className={classes.formGrid}>
             <Select
-              label="Tipo de ocorrência"
-              placeholder="Selecione o tipo"
-              data={[
-                { value: 'Incêndio Urbano', label: 'Incêndio Urbano' },
-                { value: 'Incêndio Florestal', label: 'Incêndio Florestal' },
-                { value: 'Acidente de Trânsito', label: 'Acidente de Trânsito' },
-                { value: 'Afogamento', label: 'Afogamento' },
-                { value: 'Queda de Altura', label: 'Queda de Altura' },
-                { value: 'Desabamento', label: 'Desabamento' },
-                { value: 'Outros', label: 'Outros' }
-              ]}
+              label="Tipo de ocorrência (referência)"
+              placeholder="Tipo textual retornado pelo backend"
+              data={[]}
               value={tipoOcorrencia}
-              onChange={(value) => value && setTipoOcorrencia(value)}
+              onChange={() => {}}
+              disabled
+            />
+            <TextInput
+              label="Subtipo (ID numérico)"
+              placeholder="Ex: 12"
+              value={subtipoId}
+              onChange={(e) => setSubtipoId(e.target.value.replace(/[^0-9]/g, ''))}
               required
+              inputMode="numeric"
             />
             <div>
               <Text size="sm" fw={500} mb={5}>
@@ -484,6 +505,22 @@ export default function EditarOcorrencia() {
               searchable
               clearable
               className={classes.usuarios}
+            />
+
+            <TextInput
+              label="Status (ID numérico)"
+              placeholder="Ex: 0"
+              value={statusId}
+              onChange={(e) => setStatusId(e.target.value.replace(/[^0-9]/g, ''))}
+              required
+              inputMode="numeric"
+            />
+
+            <TextInput
+              label="Veículos (IDs separados por vírgula)"
+              placeholder="Ex: 1,2,3"
+              value={vehiclesInput}
+              onChange={(e) => setVehiclesInput(e.target.value)}
             />
 
             <Group grow>

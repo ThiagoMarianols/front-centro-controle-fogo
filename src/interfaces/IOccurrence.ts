@@ -22,6 +22,8 @@ export interface IUpdateOccurrenceRequest extends IOccurrenceRequest {
   longitude: number;
   occurrenceArrivalTime: string;
   userIds: number[];
+  vehicles?: number[];
+  status: number;
 }
 
 export interface IOccurrenceOnSiteRequest {
