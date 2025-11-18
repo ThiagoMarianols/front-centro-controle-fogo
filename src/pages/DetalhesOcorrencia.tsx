@@ -110,9 +110,15 @@ export function DetalhesOcorrencia() {
             <Grid.Col span={6}>
               <Text size="xs" fw={600} style={{ opacity: 0.8, textTransform: 'uppercase' }}>Data de Registro</Text>
               <Text size="md" mt={5}>
-                {(occurrence as any).createDate 
-                  ? new Date((occurrence as any).createDate).toLocaleString('pt-BR')
-                  : '-'}
+                {(() => {
+                  const v = (occurrence as any).createDate || (occurrence as any).createdAt || (occurrence as any).createAt;
+                  if (!v) return '-';
+                  const s = String(v);
+                  const needsTZ = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s) && !(/[zZ]|[+\-]\d{2}:?\d{2}$/.test(s));
+                  const withTZ = needsTZ ? s + 'Z' : s;
+                  const d = new Date(withTZ);
+                  return isNaN(d.getTime()) ? '-' : d.toLocaleString('pt-BR');
+                })()}
               </Text>
             </Grid.Col>
           </Grid>
@@ -152,32 +158,32 @@ export function DetalhesOcorrencia() {
           <Grid gutter="md">
             <Grid.Col span={6}>
               <Text size="sm" fw={500} c="dimmed">CEP</Text>
-              <Text size="md" mt={5}>{(occurrence as any).zipCode || '-'}</Text>
+              <Text size="md" mt={5}>{(occurrence as any).address?.zipCode || (occurrence as any).zipCode || '-'}</Text>
             </Grid.Col>
             <Grid.Col span={6}>
               <Text size="sm" fw={500} c="dimmed">Logradouro</Text>
-              <Text size="md" mt={5}>{(occurrence as any).street || '-'}</Text>
+              <Text size="md" mt={5}>{(occurrence as any).address?.street || (occurrence as any).street || '-'}</Text>
             </Grid.Col>
             <Grid.Col span={6}>
               <Text size="sm" fw={500} c="dimmed">Número</Text>
-              <Text size="md" mt={5}>{(occurrence as any).number || '-'}</Text>
+              <Text size="md" mt={5}>{(occurrence as any).address?.number || (occurrence as any).number || '-'}</Text>
             </Grid.Col>
             <Grid.Col span={6}>
               <Text size="sm" fw={500} c="dimmed">Bairro</Text>
-              <Text size="md" mt={5}>{(occurrence as any).neighborhood || '-'}</Text>
+              <Text size="md" mt={5}>{(occurrence as any).address?.neighborhood || (occurrence as any).neighborhood || '-'}</Text>
             </Grid.Col>
             <Grid.Col span={6}>
               <Text size="sm" fw={500} c="dimmed">Cidade</Text>
-              <Text size="md" mt={5}>{(occurrence as any).city || '-'}</Text>
+              <Text size="md" mt={5}>{(occurrence as any).address?.city || (occurrence as any).city || '-'}</Text>
             </Grid.Col>
             <Grid.Col span={6}>
               <Text size="sm" fw={500} c="dimmed">Estado</Text>
-              <Text size="md" mt={5}>{(occurrence as any).state || '-'}</Text>
+              <Text size="md" mt={5}>{(occurrence as any).address?.state || (occurrence as any).state || '-'}</Text>
             </Grid.Col>
-            {(occurrence as any).complement && (
+            {((occurrence as any).address?.complement || (occurrence as any).complement) && (
               <Grid.Col span={12}>
                 <Text size="sm" fw={500} c="dimmed">Complemento</Text>
-                <Text size="md" mt={5}>{(occurrence as any).complement}</Text>
+                <Text size="md" mt={5}>{(occurrence as any).address?.complement || (occurrence as any).complement}</Text>
               </Grid.Col>
             )}
           </Grid>
