@@ -110,9 +110,10 @@ const Ocorrencia = () => {
 
   const handleAtendimentoClick = (item: any) => {
     console.log('[Atendimento] Click disparado', { item });
-    const status = item[4];
-    const isActive = item[5] === 'Ativo';
-    const normalized = String(status).trim().toUpperCase().replace(/\s+/g, '_');
+
+    const id = item[0];
+    const activeRaw = String(item[5] ?? '');
+    const isActive = activeRaw.trim().toLowerCase().startsWith('ativo');
 
     if (!isActive) {
       console.log('[Atendimento] Ocorrência inativa, bloqueando ação');
@@ -124,22 +125,11 @@ const Ocorrencia = () => {
       return;
     }
 
-    const allowed = normalized === 'EM_ATENDIMENTO' || normalized === 'AGUARDANDO_ATENDIMENTO';
-    if (!allowed) {
-      console.log('[Atendimento] Status não permitido para atendimento', { status });
-      notifications.show({
-        title: 'Atenção',
-        message: 'Apenas ocorrências aguardando ou em atendimento podem ser acessadas',
-        color: 'yellow',
-      });
-      return;
-    }
-    
-    console.log('[Atendimento] Navegando para completar', { id: item[0] });
-    navigate(`/CompletarOcorrencia/${item[0]}`, { 
-      state: { 
-        itemId: item[0], 
-      } 
+    console.log('[Atendimento] Navegando para completar', { id });
+    navigate(`/CompletarOcorrencia/${id}`, {
+      state: {
+        itemId: id,
+      },
     });
   };
 

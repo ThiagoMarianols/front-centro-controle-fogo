@@ -165,8 +165,8 @@ export const occurrenceService = {
     }
   },
 
-  async complete(id: number, data: IOccurrenceOnSiteRequest): Promise<string> {
-    const response = await fetch(`${API_URL}/complete/${id}`, {
+  async complete(data: any): Promise<string> {
+    const response = await fetch(`${API_URL}/complement`, {
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),

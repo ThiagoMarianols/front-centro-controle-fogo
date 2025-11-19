@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import classes from '../styles/RegistroOcorrencia.module.css';
-import { TextInput, Button, Paper, Title, Textarea, MultiSelect, Loader } from '@mantine/core';
+import { TextInput, Button, Paper, Title, Textarea, MultiSelect, Select, Loader } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
 import { notifications } from '@mantine/notifications';
 import '@mantine/dates/styles.css';
@@ -23,9 +23,15 @@ export function CompletarOcorrencia() {
   const [occurrenceArrivalTime, setOccurrenceArrivalTime] = useState<Date | null>(null);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [users, setUsers] = useState<Array<{value: string, label: string}>>([]);
+  const [selectedVehicles, setSelectedVehicles] = useState<string[]>([]);
+  const [vehicles, setVehicles] = useState<Array<{ value: string; label: string }>>([]);
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [statuses, setStatuses] = useState<Array<{ value: string; label: string }>>([]);
   const [loading, setLoading] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(true);
+  const [loadingVehicles, setLoadingVehicles] = useState(true);
+  const [loadingStatuses, setLoadingStatuses] = useState(true);
 
   useEffect(() => {
     // Buscar usuários ativos do backend
@@ -121,6 +127,99 @@ export function CompletarOcorrencia() {
     };
 
     fetchUsers();
+
+    // Buscar viaturas ativas
+    const fetchVehicles = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return;
+
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/vehicle/all`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const vehicleOptions = (Array.isArray(data) ? data : [])
+            .filter((v: any) => v && v.id && v.name)
+            .map((v: any) => ({ value: String(v.id), label: v.battalionName ? `${v.name} - ${v.battalionName}` : v.name }));
+          setVehicles(vehicleOptions);
+        } else {
+          setVehicles([]);
+          notifications.show({ title: 'Aviso', message: 'Não foi possível carregar as viaturas', color: 'yellow' });
+        }
+      } catch (e) {
+        setVehicles([]);
+        notifications.show({ title: 'Aviso', message: 'Erro ao buscar viaturas', color: 'yellow' });
+      } finally {
+        setLoadingVehicles(false);
+      }
+    };
+
+    // Buscar status de ocorrência (requer endpoint no backend)
+    const fetchStatuses = async () => {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        console.warn('fetchStatuses: sem token, não buscando');
+        setLoadingStatuses(false);
+        return;
+      }
+
+      const tryFetch = async (url: string) => {
+        console.log('Buscando status em:', url);
+        const res = await fetch(url, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        console.log('Resposta status:', res.status, res.statusText);
+        if (!res.ok) {
+          try {
+            const preview = await res.clone().text();
+            console.log('Corpo resposta (preview):', preview);
+          } catch {}
+        }
+        return res;
+      };
+
+      try {
+        // Tenta rota principal (dentro de /occurrences)
+        let response = await tryFetch(`${import.meta.env.VITE_BASE_URL}/occurrences/occurrence-status/all`);
+
+        // Fallback: tenta rota alternativa sem /occurrences
+        if (!response.ok) {
+          console.log('Tentando rota alternativa /occurrence-status/all');
+          response = await tryFetch(`${import.meta.env.VITE_BASE_URL}/occurrence-status/all`);
+        }
+
+        if (response.ok) {
+          const data = await response.json();
+          const statusOptions = (Array.isArray(data) ? data : [])
+            .filter((s: any) => s && s.id && s.name)
+            .map((s: any) => ({ value: String(s.id), label: s.name }));
+          setStatuses(statusOptions);
+          if (statusOptions.length === 0) {
+            notifications.show({ title: 'Aviso', message: 'Nenhum status retornado pela API', color: 'yellow' });
+          }
+        } else {
+          setStatuses([]);
+          notifications.show({ title: 'Aviso', message: 'Não foi possível carregar os status (ver console)', color: 'yellow' });
+        }
+      } catch (e) {
+        console.error('Erro em fetchStatuses:', e);
+        setStatuses([]);
+        notifications.show({ title: 'Aviso', message: 'Erro ao buscar status', color: 'yellow' });
+      } finally {
+        setLoadingStatuses(false);
+      }
+    };
+
+    fetchVehicles();
+    fetchStatuses();
     getLocation();
   }, []);
 
@@ -143,8 +242,10 @@ export function CompletarOcorrencia() {
     console.log('longitude:', longitude);
     console.log('occurrenceArrivalTime:', occurrenceArrivalTime);
     console.log('selectedUsers:', selectedUsers);
+    console.log('selectedVehicles:', selectedVehicles);
+    console.log('selectedStatus:', selectedStatus);
 
-    if (!occurrenceDetails || !latitude || !longitude || !occurrenceArrivalTime || selectedUsers.length === 0) {
+    if (!occurrenceDetails || !latitude || !longitude || !occurrenceArrivalTime || selectedUsers.length === 0 || selectedVehicles.length === 0 || !selectedStatus) {
       notifications.show({
         title: 'Erro',
         message: 'Preencha todos os campos obrigatórios',
@@ -161,18 +262,34 @@ export function CompletarOcorrencia() {
         ? occurrenceArrivalTime 
         : new Date(occurrenceArrivalTime as any);
 
+      const vehicles = selectedVehicles.map((v) => Number(v)).filter(v => !Number.isNaN(v));
+      const status = Number(selectedStatus);
+
+      if (vehicles.length === 0 || Number.isNaN(status)) {
+        notifications.show({
+          title: 'Erro',
+          message: 'Selecione ao menos uma viatura e um status válido',
+          color: 'red'
+        });
+        setLoading(false);
+        return;
+      }
+
       const data = {
         occurrenceDetails,
         latitude: parseFloat(latitude),
         longitude: parseFloat(longitude),
         occurrenceArrivalTime: arrivalDate.toISOString(),
-        userIds: selectedUsers.map(id => parseInt(id))
-      };
+        userIds: selectedUsers.map(id => parseInt(id)),
+        status,
+        occurrenceId: Number(occurrenceId),
+        vehicles
+      } as any;
 
       console.log('Dados a serem enviados:', data);
       console.log('Chamando API...');
 
-      const response = await occurrenceService.complete(occurrenceId, data);
+      const response = await occurrenceService.complete(data);
       console.log('Resposta da API:', response);
 
       notifications.show({
@@ -258,6 +375,33 @@ export function CompletarOcorrencia() {
               maxRows={8}
               required
               className={classes.fullWidthField}
+            />
+
+            <MultiSelect
+              label="Viaturas envolvidas"
+              placeholder={loadingVehicles ? "Carregando viaturas..." : "Selecione as viaturas"}
+              data={vehicles || []}
+              value={selectedVehicles}
+              onChange={setSelectedVehicles}
+              searchable
+              required
+              disabled={loadingVehicles || vehicles.length === 0}
+              className={classes.fullWidthField}
+              rightSection={loadingVehicles ? <Loader size="xs" /> : null}
+              nothingFoundMessage="Nenhuma viatura encontrada"
+            />
+
+            <Select
+              label="Status da ocorrência"
+              placeholder={loadingStatuses ? "Carregando status..." : "Selecione o status"}
+              data={statuses || []}
+              value={selectedStatus}
+              onChange={setSelectedStatus}
+              searchable
+              required
+              disabled={loadingStatuses}
+              rightSection={loadingStatuses ? <Loader size="xs" /> : null}
+              nothingFoundMessage="Nenhum status encontrado"
             />
           </div>
         </Paper>
