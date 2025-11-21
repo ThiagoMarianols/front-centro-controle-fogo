@@ -26,7 +26,6 @@ const mockdata = [
     icon: IconNotes,
     initiallyOpened: true,
     links: [
-      { label: 'Tipos Ocorrencias', link: '/administracao/TipoOcorrencia' },
       { label: 'Batalhão', link: '/administracao/Batalhao' },
       { label: 'Usuários', link: '/administracao/Users' },
     ],

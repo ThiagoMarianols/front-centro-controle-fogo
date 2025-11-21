@@ -108,31 +108,6 @@ const Ocorrencia = () => {
     }
   };
 
-  const handleAtendimentoClick = (item: any) => {
-    console.log('[Atendimento] Click disparado', { item });
-
-    const id = item[0];
-    const activeRaw = String(item[5] ?? '');
-    const isActive = activeRaw.trim().toLowerCase().startsWith('ativo');
-
-    if (!isActive) {
-      console.log('[Atendimento] Ocorrência inativa, bloqueando ação');
-      notifications.show({
-        title: 'Atenção',
-        message: 'Não é possível atender uma ocorrência inativa',
-        color: 'yellow',
-      });
-      return;
-    }
-
-    console.log('[Atendimento] Navegando para completar', { id });
-    navigate(`/CompletarOcorrencia/${id}`, {
-      state: {
-        itemId: id,
-      },
-    });
-  };
-
   if (loading) {
     return (
       <Center style={{ height: '100vh' }}>
@@ -170,8 +145,6 @@ const Ocorrencia = () => {
           url: "/RegistroOcorrencia",
           hasStatusFilter: true,
           statusColumnIndex: 5,
-          showAtendimento: true,
-          onAtendimentoClick: handleAtendimentoClick,
           onEdit: handleEdit,
           onDelete: handleDeactivate,
           onActivate: handleActivate

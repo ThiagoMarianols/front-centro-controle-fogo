@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import classes from '../styles/RegistroOcorrencia.module.css';
+import classes from '../styles/EditarOcorrencia.module.css';
 import { 
   Select,
   TextInput,
@@ -11,47 +11,142 @@ import {
   Group,
   Radio,
   LoadingOverlay,
-  Text,
   MultiSelect,
-  TextInput as MantineTextInput
+  Loader
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { occurrenceService } from '../services/occurrenceService';
-import { getUsersPaginated } from '../services/userService';
+import axios from '../config/axiosConfig';
 import type { IUpdateOccurrenceRequest } from '../interfaces/IOccurrence';
+import type { INature } from '../interfaces/INature';
+import type { IType } from '../interfaces/IType';
+import type { ISubType } from '../interfaces/ISubType';
+import type { IVehicle } from '../interfaces/IVehicle';
+import type { BattalionDTO } from '../interfaces/IBattalion';
+
+interface IUser {
+  id: number;
+  name: string;
+}
+
+const STATUS_OPTIONS = [
+  { value: '1', label: 'Aguardando Atendimento' },
+  { value: '2', label: 'Em Atendimento' },
+  { value: '3', label: 'Concluída' },
+  { value: '4', label: 'Falso Alarme' },
+  { value: '5', label: 'Cancelada' }
+];
+
+const normalizeStatusLabel = (value: string) =>
+  value
+    ? value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[\s_-]/g, '')
+        .toUpperCase()
+    : '';
+
+const STATUS_NAME_MAP: Record<string, string> = {
+  [normalizeStatusLabel('Aguardando Atendimento')]: '1',
+  [normalizeStatusLabel('Em Atendimento')]: '2',
+  [normalizeStatusLabel('Concluída')]: '3',
+  [normalizeStatusLabel('Concluida')]: '3',
+  [normalizeStatusLabel('Falso Alarme')]: '4',
+  [normalizeStatusLabel('Cancelada')]: '5',
+  [normalizeStatusLabel('Cancelado')]: '5',
+  [normalizeStatusLabel('Pendente')]: '1',
+  [normalizeStatusLabel('Aguardando')]: '1'
+};
+
+const formatPhoneNumber = (digits: string) => {
+  const cleaned = digits.replace(/\D/g, '').slice(0, 11);
+  if (cleaned.length === 0) return '';
+  if (cleaned.length <= 2) return `(${cleaned}`;
+  if (cleaned.length <= 6) return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2)}`;
+  if (cleaned.length <= 10) {
+    return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 6)}-${cleaned.slice(6)}`;
+  }
+  return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 7)}-${cleaned.slice(7)}`;
+};
+
+const formatCep = (digits: string) => {
+  const cleaned = digits.replace(/\D/g, '').slice(0, 8);
+  if (cleaned.length <= 5) return cleaned;
+  return `${cleaned.slice(0, 5)}-${cleaned.slice(5)}`;
+};
+
+interface IOccurrenceDetail {
+  id: number;
+  occurrenceHasVictims: boolean;
+  occurrenceRequester: string;
+  occurrenceRequesterPhoneNumber: string;
+  occurrenceSubType: number;
+  occurrenceDetails: string;
+  latitude?: number;
+  longitude?: number;
+  occurrenceArrivalTime?: string;
+  status: number;
+  address?: {
+    street: string;
+    number: number;
+    complement?: string;
+    neighborhood: string;
+    city: string;
+    state: string;
+    zipCode: string;
+  };
+  userIds?: number[];
+  vehicles?: number[];
+  battalionIds?: number[];
+  photoUrls?: string[];
+}
 
 export default function EditarOcorrencia() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  // Estado para controlar se há vítimas (Sim/Não)
+  
+  // Estados principais
   const [temVitimas, setTemVitimas] = useState<string>('Não');
   const [nomeSolicitante, setNomeSolicitante] = useState('');
   const [telefoneSolicitante, setTelefoneSolicitante] = useState('');
-  const [tipoOcorrencia, setTipoOcorrencia] = useState<string>('');
-  const [subtipoId, setSubtipoId] = useState<string>('');
-  const [occurrenceDetails, setOccurrenceDetails] = useState<string>('Detalhes da ocorrência');
+  const [occurrenceDetails, setOccurrenceDetails] = useState('');
+  const [latitude, setLatitude] = useState<string>('');
+  const [longitude, setLongitude] = useState<string>('');
+  const [occurrenceArrivalTime, setOccurrenceArrivalTime] = useState<string>('');
+  
+  const [rawOccurrence, setRawOccurrence] = useState<any>(null);
+
+  // Estados para seleção múltipla
   const [userIds, setUserIds] = useState<string[]>([]);
+  const [vehicleIds, setVehicleIds] = useState<string[]>([]);
+  const [battalionIds, setBattalionIds] = useState<string[]>([]);
+  
+  // Estados para os dados da API
   const [availableUsers, setAvailableUsers] = useState<{value: string, label: string}[]>([]);
-  const [occurrenceArrivalTime, setOccurrenceArrivalTime] = useState<string>(
-    new Date().toISOString().slice(0, 16) // Formato YYYY-MM-DDTHH:MM
-  );
-  const [coordinates, setCoordinates] = useState<{latitude: number | null, longitude: number | null}>({
-    latitude: -8.052240, // Valor padrão para testes
-    longitude: -34.928610 // Valor padrão para testes
-  });
+  const [availableVehicles, setAvailableVehicles] = useState<{value: string, label: string}[]>([]);
+  const [availableBattalions, setAvailableBattalions] = useState<{value: string, label: string}[]>([]);
+  const [statusOptions, setStatusOptions] = useState<{value: string; label: string}[]>(STATUS_OPTIONS);
+  const [natureOptions, setNatureOptions] = useState<{value: string; label: string}[]>([]);
+  const [typeOptions, setTypeOptions] = useState<{value: string; label: string}[]>([]);
+  const [subTypeOptions, setSubTypeOptions] = useState<{value: string; label: string}[]>([]);
+  
+  // Estados para seleção
   const [statusId, setStatusId] = useState<string>('');
-  const [vehiclesInput, setVehiclesInput] = useState<string>('');
-  const [endereco, setEndereco] = useState<{
-    cep: string;
-    logradouro: string;
-    bairro: string;
-    cidade: string;
-    estado: string;
-    complemento: string;
-    numero: string;
-  }>({
+  const [natureId, setNatureId] = useState<string>('');
+  const [typeId, setTypeId] = useState<string>('');
+  const [subTypeId, setSubTypeId] = useState<string>('');
+  
+  // Estados de loading
+  const [loadingNatures, setLoadingNatures] = useState(false);
+  const [loadingTypes, setLoadingTypes] = useState(false);
+  const [loadingSubTypes, setLoadingSubTypes] = useState(false);
+  const [loadingVehicles, setLoadingVehicles] = useState(false);
+  const [loadingBattalions, setLoadingBattalions] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  
+  // Estado para endereço
+  const [endereco, setEndereco] = useState({
     cep: '',
     logradouro: '',
     bairro: '',
@@ -61,32 +156,141 @@ export default function EditarOcorrencia() {
     numero: ''
   });
 
-  // Função para carregar usuários disponíveis
+  // Carrega as naturezas disponíveis
+  const loadNatures = async () => {
+    try {
+      setLoadingNatures(true);
+      const response = await axios.get<INature[]>(`${import.meta.env.VITE_BASE_URL}/occurrences/natures`);
+      setNatureOptions(response.data.map(nature => ({
+        value: nature.id.toString(),
+        label: nature.name
+      })));
+    } catch (error) {
+      console.error('Erro ao carregar naturezas:', error);
+      notifications.show({
+        title: 'Erro',
+        message: 'Não foi possível carregar as naturezas',
+        color: 'red'
+      });
+    } finally {
+      setLoadingNatures(false);
+    }
+  };
+
+  // Carrega os tipos disponíveis
+  const loadTypes = async () => {
+    try {
+      setLoadingTypes(true);
+      const response = await axios.get<IType[]>(`${import.meta.env.VITE_BASE_URL}/occurrences/types`);
+      setTypeOptions(response.data.map(type => ({
+        value: type.id.toString(),
+        label: type.name
+      })));
+    } catch (error) {
+      console.error('Erro ao carregar tipos:', error);
+      notifications.show({
+        title: 'Erro',
+        message: 'Não foi possível carregar os tipos',
+        color: 'red'
+      });
+    } finally {
+      setLoadingTypes(false);
+    }
+  };
+
+  // Carrega os subtipos disponíveis
+  const loadSubTypes = async () => {
+    try {
+      setLoadingSubTypes(true);
+      const response = await axios.get<ISubType[]>(`${import.meta.env.VITE_BASE_URL}/occurrences/subtypes`);
+      setSubTypeOptions(response.data.map(subType => ({
+        value: subType.id.toString(),
+        label: subType.name
+      })));
+    } catch (error) {
+      console.error('Erro ao carregar subtipos:', error);
+      notifications.show({
+        title: 'Erro',
+        message: 'Não foi possível carregar os subtipos',
+        color: 'red'
+      });
+    } finally {
+      setLoadingSubTypes(false);
+    }
+  };
+
+  // Carrega as viaturas disponíveis
+  const loadVehicles = async () => {
+    try {
+      setLoadingVehicles(true);
+      const response = await axios.get<IVehicle[]>(`${import.meta.env.VITE_BASE_URL}/vehicle/all`);
+      setAvailableVehicles(response.data.map(vehicle => ({
+        value: vehicle.id.toString(),
+        label: vehicle.name
+      })));
+    } catch (error) {
+      console.error('Erro ao carregar viaturas:', error);
+      notifications.show({
+        title: 'Erro',
+        message: 'Não foi possível carregar as viaturas',
+        color: 'red'
+      });
+    } finally {
+      setLoadingVehicles(false);
+    }
+  };
+
+  // Carrega os batalhões disponíveis
+  const loadBattalions = async () => {
+    try {
+      setLoadingBattalions(true);
+      const response = await axios.get<BattalionDTO[]>(`${import.meta.env.VITE_BASE_URL}/battalion/all`);
+      setAvailableBattalions(response.data.map(battalion => ({
+        value: battalion.id.toString(),
+        label: battalion.name
+      })));
+    } catch (error) {
+      console.error('Erro ao carregar batalhões:', error);
+      notifications.show({
+        title: 'Erro',
+        message: 'Não foi possível carregar os batalhões',
+        color: 'red'
+      });
+    } finally {
+      setLoadingBattalions(false);
+    }
+  };
+
+  // Carrega os usuários disponíveis
   const loadUsers = async () => {
     try {
-      // Busca os usuários ativos (primeira página, 100 itens)
-      const response = await getUsersPaginated(0, 100, '', true);
-      
-      // Mapeia os usuários para o formato esperado pelo MultiSelect
-      const users = response.items.map((user) => ({
+      setLoadingUsers(true);
+      const response = await axios.get<IUser[]>(`${import.meta.env.VITE_BASE_URL}/auth/all`);
+      setAvailableUsers(response.data.map(user => ({
         value: user.id.toString(),
-        label: `${user.name} (${user.email || 'Sem e-mail'})`
-      }));
-      
-      setAvailableUsers(users);
-      
-      // Se não houver usuário selecionado e houver usuários disponíveis, seleciona o primeiro
-      if (userIds.length === 0 && users.length > 0) {
-        setUserIds([users[0].value]);
-      }
+        label: user.name
+      })));
     } catch (error) {
       console.error('Erro ao carregar usuários:', error);
       notifications.show({
         title: 'Erro',
-        message: 'Não foi possível carregar a lista de usuários',
+        message: 'Não foi possível carregar os militares',
         color: 'red'
       });
+    } finally {
+      setLoadingUsers(false);
     }
+  };
+
+  // Carrega os status disponíveis (0-5 conforme documentação)
+  const loadStatus = () => {
+    setStatusOptions(STATUS_OPTIONS);
+  };
+
+  const getStatusIdFromLabel = (label?: string | null) => {
+    if (!label) return '';
+    const normalized = normalizeStatusLabel(label);
+    return STATUS_NAME_MAP[normalized] || '';
   };
 
   // Carrega os dados da ocorrência
@@ -94,65 +298,162 @@ export default function EditarOcorrencia() {
     if (!id) return;
     
     try {
-      const occurrence = await occurrenceService.getById(Number(id));
-      setNomeSolicitante(occurrence.occurrenceRequester);
-      setTelefoneSolicitante(occurrence.occurrenceRequesterPhoneNumber);
-      setTipoOcorrencia(occurrence.occurrenceSubType);
-      setSubtipoId(''); // ID numérico do subtipo deverá ser informado manualmente
-      setTemVitimas(occurrence.occurrenceHasVictims !== undefined ? (occurrence.occurrenceHasVictims ? 'Sim' : 'Não') : 'Não');
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/occurrences/${id}`);
+      const occurrence = response.data;
       
-      const addr = (occurrence as any)?.address;
-      setEndereco({
-        cep: addr?.zipCode || (occurrence as any).zipCode || '',
-        logradouro: addr?.street || (occurrence as any).street || '',
-        numero: (addr?.number ?? (occurrence as any).number ?? '').toString(),
-        bairro: addr?.neighborhood || (occurrence as any).neighborhood || '',
-        cidade: addr?.city || (occurrence as any).city || '',
-        estado: addr?.state || (occurrence as any).state || '',
-        complemento: addr?.complement || (occurrence as any).complement || ''
-      });
-      setStatusId(''); // Status numérico deverá ser informado manualmente
+      console.log('Dados da ocorrência recebidos:', occurrence);
+      
+      // Preenche os campos do formulário
+      setNomeSolicitante(occurrence.occurrenceRequester || '');
+      setTelefoneSolicitante((occurrence.occurrenceRequesterPhoneNumber || '').replace(/\D/g, ''));
+      setTemVitimas(occurrence.occurrenceHasVictims ? 'Sim' : 'Não');
+      setOccurrenceDetails(occurrence.occurrenceDetails || '');
+      setLatitude(occurrence.latitude?.toString() || '');
+      setLongitude(occurrence.longitude?.toString() || '');
+      
+      if (occurrence.occurrenceArrivalTime) {
+        // Converte ISO string para datetime-local format
+        const date = new Date(occurrence.occurrenceArrivalTime);
+        const localDateTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+          .toISOString()
+          .slice(0, 16);
+        setOccurrenceArrivalTime(localDateTime);
+      }
+      
+      // Preenche endereço
+      if (occurrence.address) {
+        setEndereco({
+          cep: (occurrence.address.zipCode || '').replace(/\D/g, ''),
+          logradouro: occurrence.address.street || '',
+          numero: occurrence.address.number?.toString() || '',
+          bairro: occurrence.address.neighborhood || '',
+          cidade: occurrence.address.city || '',
+          estado: occurrence.address.state || '',
+          complemento: occurrence.address.complement || ''
+        });
+      }
+      
+      // Preenche status - API retorna string, precisa encontrar o ID correspondente
+      if (occurrence.status) {
+        setStatusId(getStatusIdFromLabel(occurrence.status));
+      }
+      
+      // Armazena dados brutos para mapear depois que as opções forem carregadas
+      setRawOccurrence(occurrence);
+      
+      // Preenche usuários - API retorna array de objetos com id
+      if (occurrence.users && occurrence.users.length > 0) {
+        setUserIds(occurrence.users.map((user: any) => user.id?.toString()));
+      }
+      
+      // Preenche veículos - API retorna array de objetos com id
+      if (occurrence.vehicles && occurrence.vehicles.length > 0) {
+        setVehicleIds(occurrence.vehicles.map((v: any) => v.id?.toString()));
+      }
+      
     } catch (error) {
+      console.error('Erro ao carregar ocorrência:', error);
       notifications.show({
         title: 'Erro',
-        message: 'Erro ao carregar os dados da ocorrência',
+        message: 'Não foi possível carregar os dados da ocorrência',
         color: 'red'
       });
-      navigate('/Ocorrencia');
-    } finally {
-      setLoading(false);
+      navigate('/ocorrencia');
     }
   };
 
-  // Efeito para carregar os dados iniciais
-  useEffect(() => {
-    const loadData = async () => {
-      await loadUsers();
+  // Carrega os dados iniciais
+  const loadInitialData = useCallback(async () => {
+    try {
+      setLoading(true);
+      loadStatus();
+      await Promise.all([
+        loadNatures(),
+        loadTypes(),
+        loadSubTypes(),
+        loadUsers(),
+        loadVehicles(),
+        loadBattalions()
+      ]);
+      
       if (id) {
         await loadOccurrence();
-      } else {
-        setLoading(false);
       }
-    };
-    
-    loadData();
-  }, [id, navigate]);
+    } catch (error) {
+      console.error('Erro ao carregar dados iniciais:', error);
+      notifications.show({
+        title: 'Erro',
+        message: 'Não foi possível carregar os dados iniciais',
+        color: 'red'
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
 
-  // Função que consulta o ViaCEP
-  async function buscarCep(valor: string): Promise<void> {
-    const cepLimpo = valor.replace(/\D/g, '');
+  // Efeito para carregar os dados iniciais
+  useEffect(() => {
+    loadInitialData();
+  }, [loadInitialData]);
+
+  // Efeito para mapear nomes para IDs quando as opções forem carregadas
+  useEffect(() => {
+    if (!rawOccurrence) return;
+
+    // Mapeia natureza
+    if (rawOccurrence.occurrenceNature && natureOptions.length > 0) {
+      const nature = natureOptions.find(n => n.label === rawOccurrence.occurrenceNature);
+      if (nature) {
+        setNatureId(nature.value);
+      }
+    }
+
+    // Mapeia tipo
+    if (rawOccurrence.occurrenceType && typeOptions.length > 0) {
+      const type = typeOptions.find(t => t.label === rawOccurrence.occurrenceType);
+      if (type) {
+        setTypeId(type.value);
+      }
+    }
+
+    // Mapeia subtipo
+    if (rawOccurrence.occurrenceSubType && subTypeOptions.length > 0) {
+      const subType = subTypeOptions.find(st => st.label === rawOccurrence.occurrenceSubType);
+      if (subType) {
+        setSubTypeId(subType.value);
+      }
+    }
+
+    // Mapeia batalhões
+    if (rawOccurrence.battalions && rawOccurrence.battalions.length > 0 && availableBattalions.length > 0) {
+      const battalionIds = rawOccurrence.battalions
+        .map((name: string) => {
+          const battalion = availableBattalions.find(b => b.label === name);
+          return battalion?.value;
+        })
+        .filter((id: string | undefined) => id !== undefined);
+      setBattalionIds(battalionIds);
+    }
+  }, [rawOccurrence, natureOptions, typeOptions, subTypeOptions, availableBattalions]);
+
+  // Função para buscar CEP
+  const buscarCep = async (cep: string) => {
+    const cepLimpo = cep.replace(/\D/g, '');
     if (cepLimpo.length !== 8) return;
 
     try {
-      const res = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
-      const data = await res.json();
+      const response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+      const data = await response.json();
 
       if (data.erro) {
-        console.warn('CEP não encontrado');
+        notifications.show({
+          title: 'Aviso',
+          message: 'CEP não encontrado',
+          color: 'yellow'
+        });
         return;
       }
 
-      // Atualiza os campos com o retorno
       setEndereco(prev => ({
         ...prev,
         logradouro: data.logradouro || '',
@@ -162,462 +463,413 @@ export default function EditarOcorrencia() {
         complemento: data.complemento || ''
       }));
     } catch (error) {
-      console.error('Erro ao buscar o CEP:', error);
-    }
-  }
-
-  function limparEndereco() {
-    setEndereco(prev => ({
-      ...prev,
-      logradouro: '',
-      bairro: '',
-      cidade: '',
-      estado: '',
-      complemento: ''
-    }));
-  }
-
-  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
-    console.log('=== INÍCIO DO HANDLE SUBMIT ===');
-    e.preventDefault();
-    
-    // Verificar campos obrigatórios
-    const camposObrigatorios = [
-      { nome: 'ID', valor: id },
-      { nome: 'Nome do Solicitante', valor: nomeSolicitante },
-      { nome: 'Telefone', valor: telefoneSolicitante },
-      { nome: 'Subtipo (ID numérico)', valor: subtipoId },
-      { nome: 'Tem Vítimas', valor: temVitimas },
-      { nome: 'Detalhes da Ocorrência', valor: occurrenceDetails },
-      { nome: 'Latitude', valor: coordinates.latitude },
-      { nome: 'Longitude', valor: coordinates.longitude },
-      { nome: 'Logradouro', valor: endereco.logradouro },
-      { nome: 'Número', valor: endereco.numero },
-      { nome: 'Bairro', valor: endereco.bairro },
-      { nome: 'Cidade', valor: endereco.cidade },
-      { nome: 'Estado', valor: endereco.estado },
-      { nome: 'Status (ID numérico)', valor: statusId }
-    ];
-    
-    const camposFaltantes = camposObrigatorios.filter(campo => !campo.valor);
-    
-    if (camposFaltantes.length > 0) {
-      console.log('Campos obrigatórios faltando:', camposFaltantes);
+      console.error('Erro ao buscar CEP:', error);
       notifications.show({
-        title: 'Erro de Validação',
-        message: `Preencha os campos obrigatórios: ${camposFaltantes.map(c => c.nome).join(', ')}`,
+        title: 'Erro',
+        message: 'Não foi possível buscar o CEP',
         color: 'red'
+      });
+    }
+  };
+
+  // Função para salvar as alterações
+  const handleSave = async () => {
+    if (!id) return;
+
+    // Validações
+    if (!nomeSolicitante.trim()) {
+      notifications.show({
+        title: 'Atenção',
+        message: 'Nome do solicitante é obrigatório',
+        color: 'yellow'
       });
       return;
     }
 
-    // Validações adicionais
-    if (!(telefoneSolicitante.length === 10 || telefoneSolicitante.length === 11)) {
+    if (!telefoneSolicitante.trim()) {
       notifications.show({
-        title: 'Telefone inválido',
-        message: 'Informe um telefone com DDD (10 ou 11 dígitos). Ex: (81) 98765-8765',
-        color: 'red'
+        title: 'Atenção',
+        message: 'Telefone do solicitante é obrigatório',
+        color: 'yellow'
       });
       return;
     }
 
-    console.log('Todos os campos obrigatórios preenchidos');
-    setSubmitting(true);
+    if (!subTypeId) {
+      notifications.show({
+        title: 'Atenção',
+        message: 'Subtipo da ocorrência é obrigatório',
+        color: 'yellow'
+      });
+      return;
+    }
+
+    if (!statusId) {
+      notifications.show({
+        title: 'Atenção',
+        message: 'Status é obrigatório',
+        color: 'yellow'
+      });
+      return;
+    }
+
+    if (!endereco.logradouro.trim() || !endereco.numero.trim() || !endereco.bairro.trim() || 
+        !endereco.cidade.trim() || !endereco.estado.trim() || !endereco.cep.trim()) {
+      notifications.show({
+        title: 'Atenção',
+        message: 'Todos os campos de endereço são obrigatórios',
+        color: 'yellow'
+      });
+      return;
+    }
 
     try {
-      console.log('Criando payload...');
+      setSubmitting(true);
       
-      // Verificar se as coordenadas são números válidos
-      if (isNaN(coordinates.latitude!) || isNaN(coordinates.longitude!)) {
-        throw new Error('Coordenadas inválidas');
-      }
-      // Parse da lista de veículos (IDs separados por vírgula)
-      const vehicles: number[] | undefined = vehiclesInput
-        ? vehiclesInput.split(',')
-            .map(v => Number(v.trim()))
-            .filter(v => !isNaN(v))
-        : undefined;
-
-      const statusNumber = Number(statusId);
-      if (isNaN(statusNumber)) {
-        throw new Error('Status deve ser um número válido');
-      }
-
-      const payload: IUpdateOccurrenceRequest = {
+      const updateData: IUpdateOccurrenceRequest = {
+        occurrenceRequester: nomeSolicitante,
+        occurrenceRequesterPhoneNumber: telefoneSolicitante,
         occurrenceHasVictims: temVitimas === 'Sim',
-        occurrenceRequester: nomeSolicitante.trim(),
-        occurrenceRequesterPhoneNumber: telefoneSolicitante.replace(/\D/g, ''),
-        occurrenceSubType: Number(subtipoId),
-        occurrenceDetails: occurrenceDetails.trim(),
-        occurrenceArrivalTime: new Date(occurrenceArrivalTime).toISOString(),
-        latitude: coordinates.latitude!,
-        longitude: coordinates.longitude!,
-        userIds: userIds.map(id => Number(id)),
-        vehicles,
-        status: statusNumber,
+        occurrenceDetails: occurrenceDetails || '',
+        occurrenceSubType: parseInt(subTypeId),
+        status: parseInt(statusId),
+        userIds: userIds.map(id => parseInt(id)),
+        vehicles: vehicleIds.map(id => parseInt(id)),
+        battalionIds: battalionIds.map(id => parseInt(id)),
         address: {
-          zipCode: endereco.cep.replace(/\D/g, ''),
-          street: endereco.logradouro.trim(),
-          number: Number(endereco.numero.trim()),
-          neighborhood: endereco.bairro.trim(),
-          city: endereco.cidade.trim(),
-          state: endereco.estado.trim().toUpperCase(),
-          complement: endereco.complemento?.trim() || ''
-        }
+          zipCode: endereco.cep.replace(/\D/g, ''), // Remove hífen e outros caracteres
+          street: endereco.logradouro,
+          number: parseInt(endereco.numero),
+          neighborhood: endereco.bairro,
+          city: endereco.cidade,
+          state: endereco.estado,
+          complement: endereco.complemento || ''
+        },
+        latitude: latitude && !isNaN(parseFloat(latitude)) ? parseFloat(latitude) : 0,
+        longitude: longitude && !isNaN(parseFloat(longitude)) ? parseFloat(longitude) : 0,
+        occurrenceArrivalTime: occurrenceArrivalTime 
+          ? new Date(occurrenceArrivalTime).toISOString() 
+          : new Date().toISOString(),
+        photoUrls: []
       };
 
-      console.log('Payload criado:', JSON.stringify(payload, null, 2));
-      
-      console.log('Chamando occurrenceService.update...');
-      const response = await occurrenceService.update(Number(id), payload);
-      console.log('Resposta do servidor:', response);
+      console.log('Payload enviado:', JSON.stringify(updateData, null, 2));
 
+      await axios.put(`${import.meta.env.VITE_BASE_URL}/occurrences/${id}`, updateData);
+      
       notifications.show({
         title: 'Sucesso',
-        message: 'Ocorrência atualizada com sucesso',
+        message: 'Ocorrência atualizada com sucesso!',
         color: 'green'
       });
-
-      // Redirecionar para a lista de ocorrências
-      navigate('/Ocorrencia');
+      
+      navigate('/ocorrencia');
     } catch (error: any) {
-      console.error('=== ERRO AO ATUALIZAR OCORRÊNCIA ===');
-      console.error('Tipo do erro:', typeof error);
-      console.error('Mensagem:', error?.message);
-      console.error('Stack:', error?.stack);
-      
-      let errorMessage = 'Erro ao atualizar a ocorrência';
-      
-      if (error?.response?.data) {
-        // Se for um erro do Axios
-        console.error('Resposta de erro do servidor:', error.response.data);
-        errorMessage = error.response.data.message || JSON.stringify(error.response.data);
-      } else if (error?.message) {
-        // Se for um erro padrão
-        try {
-          const errorData = JSON.parse(error.message);
-          errorMessage = errorData.message || error.message;
-        } catch (e) {
-          errorMessage = error.message;
-        }
-      }
-      
-      console.error('Mensagem de erro para o usuário:', errorMessage);
-      
+      console.error('Erro ao atualizar ocorrência:', error);
+      const errorMessage = error.response?.data?.message || 'Não foi possível atualizar a ocorrência';
       notifications.show({
         title: 'Erro',
         message: errorMessage,
-        color: 'red',
-        autoClose: 10000
+        color: 'red'
       });
     } finally {
       setSubmitting(false);
     }
-  }
+  };
 
-  function formatPhone(value: string) {
-    const digits = value.replace(/\D/g, '').slice(0, 11);
-    if (digits.length === 0) return '';
-    if (digits.length <= 2) return `(${digits}`;
-    if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-    if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
-    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-  }
-
-  if (loading) {
-    return (
-      <div style={{ position: 'relative' }}>
-        <LoadingOverlay visible={true} />
-      </div>
-    );
-  }
-
-  console.log('Renderizando formulário');
-  
   return (
-    <form 
-      onSubmit={(e) => {
-        console.log('Evento onSubmit do formulário');
-        handleSubmit(e);
-      }} 
-      className={classes.centerWrap}
-    >
-      <Title order={2} className={classes.title}>Editar Ocorrência</Title>
-
-      <div className={classes.cardsStack}>
-        {/* Dados do solicitante */}
-        <Paper withBorder shadow="sm" p="md" radius="md" className={classes.paper}>
-          <Title order={3} className={classes.cardTitle}>Dados do solicitante</Title>
-          <div className={classes.formGrid}>
+    <div className={classes.container}>
+      <LoadingOverlay visible={loading} />
+      
+      <Paper p="md" shadow="sm" className={classes.formContainer}>
+        <Title order={2} mb="md">Editar Ocorrência</Title>
+        
+        <div className={classes.formSection}>
+          <Title order={4} mb="md">Informações Básicas</Title>
+          
+          <div className={classes.formRow}>
             <TextInput
-              label="Nome do solicitante"
-              placeholder="Nome do solicitante"
+              label="Nome do Solicitante"
               value={nomeSolicitante}
               onChange={(e) => setNomeSolicitante(e.target.value)}
+              className={classes.formInput}
               required
-            />
-            <TextInput
-              label="Telefone"
-              placeholder="(00) 00000-0000"
-              value={formatPhone(telefoneSolicitante)}
-              onChange={(e) => setTelefoneSolicitante(e.target.value.replace(/\D/g, '').slice(0, 11))}
-              required
-              inputMode="tel"
-            />
-          </div>
-        </Paper>
-
-        {/* Local da ocorrência */}
-        <Paper withBorder shadow="sm" p="md" radius="md" className={classes.paper}>
-          <Title order={3} className={classes.cardTitle}>Local da ocorrência</Title>
-          <div className={classes.formGrid}>
-            <TextInput
-              label="CEP"
-              placeholder="CEP"
-              value={endereco.cep}
-              onChange={(e) => {
-                const valor = e.target.value;
-                setEndereco(prev => ({ ...prev, cep: valor }));
-              
-                const limpo = valor.replace(/\D/g, '');
-              
-                if (limpo.length === 8) {
-                  buscarCep(limpo);
-                } else {
-                  limparEndereco();
-                }
-              }}
-              maxLength={9}
-              required
-            />
-            <TextInput
-              label="Logradouro"
-              placeholder="Rua, Avenida, etc."
-              value={endereco.logradouro}
-              onChange={(e) => setEndereco(prev => ({ ...prev, logradouro: e.target.value }))}
-              required
-            />
-            <TextInput
-              label="Número"
-              placeholder="Número"
-              value={endereco.numero}
-              onChange={(e) => setEndereco(prev => ({ ...prev, numero: e.target.value }))}
-              required
-            />
-            <TextInput
-              label="Complemento"
-              placeholder="Complemento (opcional)"
-              value={endereco.complemento}
-              onChange={(e) => setEndereco(prev => ({ ...prev, complemento: e.target.value }))}
-            />
-            <TextInput
-              label="Bairro"
-              placeholder="Bairro"
-              value={endereco.bairro}
-              onChange={(e) => setEndereco(prev => ({ ...prev, bairro: e.target.value }))}
-              required
-            />
-            <TextInput
-              label="Cidade"
-              placeholder="Cidade"
-              value={endereco.cidade}
-              onChange={(e) => setEndereco(prev => ({ ...prev, cidade: e.target.value }))}
-              required
-            />
-            <TextInput
-              label="Estado"
-              placeholder="UF"
-              value={endereco.estado}
-              onChange={(e) => setEndereco(prev => ({ ...prev, estado: e.target.value }))}
-              maxLength={2}
-              required
-            />
-          </div>
-        </Paper>
-
-        {/* Detalhes da ocorrência */}
-        <Paper withBorder shadow="sm" p="md" radius="md" className={classes.paper}>
-          <Title order={3} className={classes.cardTitle}>Detalhes da ocorrência</Title>
-          <div className={classes.formGrid}>
-            <Select
-              label="Tipo de ocorrência (referência)"
-              placeholder="Tipo textual retornado pelo backend"
-              data={[]}
-              value={tipoOcorrencia}
-              onChange={() => {}}
-              disabled
-            />
-            <TextInput
-              label="Subtipo (ID numérico)"
-              placeholder="Ex: 12"
-              value={subtipoId}
-              onChange={(e) => setSubtipoId(e.target.value.replace(/[^0-9]/g, ''))}
-              required
-              inputMode="numeric"
-            />
-            <div>
-              <Text size="sm" fw={500} mb={5}>
-                Há vítimas? <Text component="span" c="red">*</Text>
-              </Text>
-              <Radio.Group
-                value={temVitimas}
-                onChange={(value) => setTemVitimas(value)}
-                name="temVitimas"
-                required
-              >
-                <Group mt="xs">
-                  <Radio value="Sim" label="Sim" />
-                  <Radio value="Não" label="Não" />
-                </Group>
-              </Radio.Group>
-            </div>
-          </div>
-        </Paper>
-
-        {/* Detalhes adicionais */}
-        <Paper withBorder shadow="sm" p="md" radius="md" className={classes.paper}>
-          <Title order={3} className={classes.cardTitle}>Informações Adicionais</Title>
-          <div className={classes.formGrid}>
-            <Textarea
-              label="Detalhes da Ocorrência"
-              placeholder="Descreva os detalhes da ocorrência"
-              value={occurrenceDetails}
-              onChange={(e) => setOccurrenceDetails(e.target.value)}
-              required
-              minRows={3}
+              placeholder="Digite o nome do solicitante"
             />
             
-            <MantineTextInput
-              type="datetime-local"
-              label="Horário de Chegada"
-              value={occurrenceArrivalTime}
-              onChange={(e) => setOccurrenceArrivalTime(e.target.value)}
+            <TextInput
+              label="Telefone do Solicitante"
+              value={formatPhoneNumber(telefoneSolicitante)}
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
+                setTelefoneSolicitante(digits);
+              }}
+              className={classes.formInput}
               required
+              placeholder="(00) 00000-0000"
             />
-
-            <MultiSelect
-              label="Usuários Responsáveis"
-              placeholder="Selecione os usuários"
-              data={availableUsers}
-              value={userIds}
-              onChange={setUserIds}
+          </div>
+          
+          <div className={classes.formRow}>
+            <Select
+              label="Status"
+              placeholder="Selecione o status"
+              value={statusId}
+              onChange={(value) => setStatusId(value || '')}
+              data={statusOptions}
+              className={classes.formInput}
               required
               searchable
               clearable
-              className={classes.usuarios}
+              nothingFoundMessage="Nenhum status encontrado"
             />
-
-            <TextInput
-              label="Status (ID numérico)"
-              placeholder="Ex: 0"
-              value={statusId}
-              onChange={(e) => setStatusId(e.target.value.replace(/[^0-9]/g, ''))}
-              required
-              inputMode="numeric"
+            
+            <Select
+              label="Natureza da Ocorrência"
+              placeholder="Selecione a natureza"
+              value={natureId}
+              onChange={(value) => setNatureId(value || '')}
+              data={natureOptions}
+              className={classes.formInput}
+              searchable
+              clearable
+              nothingFoundMessage="Nenhuma natureza encontrada"
+              disabled={loadingNatures}
+              rightSection={loadingNatures ? <Loader size="xs" /> : null}
             />
-
-            <TextInput
-              label="Veículos (IDs separados por vírgula)"
-              placeholder="Ex: 1,2,3"
-              value={vehiclesInput}
-              onChange={(e) => setVehiclesInput(e.target.value)}
-            />
-
-            <Group grow>
-              <TextInput
-                label="Latitude"
-                placeholder="Ex: -8.052240"
-                value={coordinates.latitude?.toString() || ''}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value);
-                  setCoordinates(prev => ({
-                    ...prev,
-                    latitude: isNaN(value) ? null : value
-                  }));
-                }}
-                required
-              />
-              <TextInput
-                label="Longitude"
-                placeholder="Ex: -34.928610"
-                value={coordinates.longitude?.toString() || ''}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value);
-                  setCoordinates(prev => ({
-                    ...prev,
-                    longitude: isNaN(value) ? null : value
-                  }));
-                }}
-                required
-              />
-              <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    if (navigator.geolocation) {
-                      setSubmitting(true);
-                      navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                          setCoordinates({
-                            latitude: position.coords.latitude,
-                            longitude: position.coords.longitude
-                          });
-                          notifications.show({
-                            title: 'Sucesso',
-                            message: 'Localização obtida com sucesso!',
-                            color: 'green'
-                          });
-                          setSubmitting(false);
-                        },
-                        (error) => {
-                          console.error('Erro ao obter localização:', error);
-                          notifications.show({
-                            title: 'Erro',
-                            message: 'Não foi possível obter a localização. Por favor, preencha manualmente.',
-                            color: 'red'
-                          });
-                          setSubmitting(false);
-                        },
-                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                      );
-                    } else {
-                      notifications.show({
-                        title: 'Erro',
-                        message: 'Seu navegador não suporta geolocalização. Preencha manualmente.',
-                        color: 'red'
-                      });
-                    }
-                  }}
-                  loading={submitting}
-                  style={{ height: '36px' }}
-                >
-                  Minha Localização
-                </Button>
-              </div>
-            </Group>
           </div>
-        </Paper>
-      </div>
+          
+          <div className={classes.formRow}>
+            <Select
+              label="Tipo de Ocorrência"
+              placeholder="Selecione o tipo"
+              value={typeId}
+              onChange={(value) => setTypeId(value || '')}
+              data={typeOptions}
+              className={classes.formInput}
+              searchable
+              clearable
+              nothingFoundMessage="Nenhum tipo encontrado"
+              disabled={loadingTypes}
+              rightSection={loadingTypes ? <Loader size="xs" /> : null}
+            />
+            
+            <Select
+              label="Subtipo da Ocorrência"
+              placeholder="Selecione o subtipo"
+              value={subTypeId}
+              onChange={(value) => setSubTypeId(value || '')}
+              data={subTypeOptions}
+              className={classes.formInput}
+              required
+              searchable
+              clearable
+              nothingFoundMessage="Nenhum subtipo encontrado"
+              disabled={loadingSubTypes}
+              rightSection={loadingSubTypes ? <Loader size="xs" /> : null}
+            />
+          </div>
+          
+          <div className={classes.formRow}>
+            <MultiSelect
+              label="Militares Envolvidos"
+              placeholder="Selecione os militares"
+              value={userIds}
+              onChange={setUserIds}
+              data={availableUsers}
+              className={classes.formInput}
+              searchable
+              clearable
+              nothingFoundMessage="Nenhum militar encontrado"
+              disabled={loadingUsers}
+            />
+            
+            <MultiSelect
+              label="Viaturas"
+              placeholder="Selecione as viaturas"
+              value={vehicleIds}
+              onChange={setVehicleIds}
+              data={availableVehicles}
+              className={classes.formInput}
+              searchable
+              clearable
+              nothingFoundMessage="Nenhuma viatura encontrada"
+              disabled={loadingVehicles}
+            />
+          </div>
+          
+          <div className={classes.formRow}>
+            <MultiSelect
+              label="Batalhões"
+              placeholder="Selecione os batalhões"
+              value={battalionIds}
+              onChange={setBattalionIds}
+              data={availableBattalions}
+              className={classes.formInput}
+              searchable
+              clearable
+              nothingFoundMessage="Nenhum batalhão encontrado"
+              disabled={loadingBattalions}
+            />
+            
+            <Radio.Group
+              name="temVitimas"
+              label="Tem Vítimas?"
+              value={temVitimas}
+              onChange={setTemVitimas}
+              className={classes.formInput}
+              required
+            >
+              <Group mt="xs" justify="center">
+                <Radio value="Sim" label="Sim" />
+                <Radio value="Não" label="Não" />
+              </Group>
+            </Radio.Group>
+          </div>
+          
+          <Textarea
+            label="Detalhes da Ocorrência"
+            value={occurrenceDetails}
+            onChange={(e) => setOccurrenceDetails(e.target.value)}
+            className={classes.formTextArea}
+            minRows={4}
+            placeholder="Descreva os detalhes da ocorrência"
+          />
+        </div>
+        
+        <div className={classes.formSection}>
+          <Title order={4} mb="md">Localização</Title>
+          
+          <div className={classes.formRow}>
+            <TextInput
+              label="Latitude"
+              value={latitude}
+              onChange={(e) => setLatitude(e.target.value)}
+              className={classes.formInput}
+              placeholder="Ex: -15.7801"
+              type="number"
+              step="any"
+            />
+            
+            <TextInput
+              label="Longitude"
+              value={longitude}
+              onChange={(e) => setLongitude(e.target.value)}
+              className={classes.formInput}
+              placeholder="Ex: -47.9292"
+              type="number"
+              step="any"
+            />
+          </div>
+          
+          <TextInput
+            label="Horário de Chegada"
+            value={occurrenceArrivalTime}
+            onChange={(e) => setOccurrenceArrivalTime(e.target.value)}
+            className={classes.formInput}
+            type="datetime-local"
+          />
+        </div>
+        
+        <div className={classes.formSection}>
+          <Title order={4} mb="md">Endereço</Title>
+          
+          <div className={classes.formRow}>
+            <TextInput
+              label="CEP"
+              value={formatCep(endereco.cep)}
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, '').slice(0, 8);
+                setEndereco(prev => ({ ...prev, cep: digits }));
 
-      <Group justify="flex-end" mt="md" className={classes.actions}>
-        <Button
-          variant="outline"
-          onClick={(e) => {
-            e.preventDefault();
-            navigate('/Ocorrencia');
-          }}
-          disabled={submitting}
-          type="button"
-        >
-          Cancelar
-        </Button>
-        <Button
-          type="submit"
-          loading={submitting}
-        >
-          Salvar alterações
-        </Button>
-      </Group>
-    </form>
+                if (digits.length === 8) {
+                  buscarCep(digits);
+                }
+              }}
+              className={classes.formInput}
+              placeholder="00000-000"
+              maxLength={9}
+              required
+            />
+            
+            <TextInput
+              label="Logradouro"
+              value={endereco.logradouro}
+              onChange={(e) => setEndereco(prev => ({ ...prev, logradouro: e.target.value }))}
+              className={classes.formInput}
+              required
+              placeholder="Rua, Avenida, etc."
+            />
+          </div>
+          
+          <div className={classes.formRow}>
+            <TextInput
+              label="Número"
+              value={endereco.numero}
+              onChange={(e) => setEndereco(prev => ({ ...prev, numero: e.target.value }))}
+              className={classes.formInput}
+              required
+              placeholder="Número"
+            />
+            
+            <TextInput
+              label="Bairro"
+              value={endereco.bairro}
+              onChange={(e) => setEndereco(prev => ({ ...prev, bairro: e.target.value }))}
+              className={classes.formInput}
+              required
+              placeholder="Bairro"
+            />
+          </div>
+          
+          <div className={classes.formRow}>
+            <TextInput
+              label="Cidade"
+              value={endereco.cidade}
+              onChange={(e) => setEndereco(prev => ({ ...prev, cidade: e.target.value }))}
+              className={classes.formInput}
+              required
+              placeholder="Cidade"
+            />
+            
+            <TextInput
+              label="Estado"
+              value={endereco.estado}
+              onChange={(e) => setEndereco(prev => ({ ...prev, estado: e.target.value.toUpperCase() }))}
+              className={classes.formInput}
+              maxLength={2}
+              required
+              placeholder="UF"
+            />
+          </div>
+          
+          <TextInput
+            label="Complemento"
+            value={endereco.complemento}
+            onChange={(e) => setEndereco(prev => ({ ...prev, complemento: e.target.value }))}
+            className={classes.formInput}
+            placeholder="Apartamento, bloco, etc."
+          />
+        </div>
+        
+        <Group justify="flex-end" mt="xl">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/ocorrencia')}
+            disabled={submitting}
+          >
+            Cancelar
+          </Button>
+          
+          <Button 
+            onClick={handleSave}
+            loading={submitting}
+            disabled={submitting}
+          >
+            Salvar Alterações
+          </Button>
+        </Group>
+      </Paper>
+    </div>
   );
 }

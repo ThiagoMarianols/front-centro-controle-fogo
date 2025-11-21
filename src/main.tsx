@@ -15,17 +15,17 @@ import Login from './pages/Login.tsx'
 import Home from './pages/Home.tsx'
 import { CadastroUsuario} from './pages/administracao/UserReg.tsx'
 import Users from './pages/administracao/Users.tsx'
-import TipoOcorrencia from './pages/administracao/TipoOcorrencia.tsx'
 import Relatorios from './pages/Relatorios.tsx'
 import Batalhao from './pages/administracao/batalhao.tsx'
 import Dashboard from './pages/dashboard.tsx'
 import Ocorrencia from './pages/Ocorrencia.tsx'
 import { RegistroOcorrencia } from './pages/RegistroOcorrencia.tsx'
+import EditarOcorrencia from './pages/EditarOcorrencia.tsx'
 import { RegistroBatalhao } from './pages/administracao/RegistroBatalhao.tsx'
+import EditarBatalhao from './pages/administracao/EditarBatalhao.tsx'
 import { CadastroOcorrenciaSecun } from './pages/CadastroOcorrenciaSecun.tsx'
 import { DetalhesOcorrencia } from './pages/DetalhesOcorrencia.tsx'
 import { CompletarOcorrencia } from './pages/CompletarOcorrencia.tsx'
-import EditarOcorrencia from './pages/EditarOcorrencia.tsx'
 
 const router = createBrowserRouter([
   {
@@ -35,7 +35,6 @@ const router = createBrowserRouter([
       { path: '', element: <ProtectedRoute><Home /></ProtectedRoute> },
       { path: 'administracao/CadastroUsuario', element: <ProtectedRoute><CadastroUsuario /></ProtectedRoute> },
       { path: 'administracao/Users', element: <ProtectedRoute><Users /></ProtectedRoute> },
-      { path: 'administracao/TipoOcorrencia', element: <ProtectedRoute><TipoOcorrencia /></ProtectedRoute> },
       { path: 'administracao/Relatorios', element: <ProtectedRoute><Relatorios /></ProtectedRoute> },
       { path: 'administracao/Batalhao', element: <ProtectedRoute><Batalhao /></ProtectedRoute> },
       { path: 'dashboard', element: <ProtectedRoute><Dashboard /></ProtectedRoute> },
@@ -43,9 +42,10 @@ const router = createBrowserRouter([
       { path: 'DetalhesOcorrencia/:id', element: <ProtectedRoute><DetalhesOcorrencia /></ProtectedRoute> },
       { path: 'CompletarOcorrencia/:id', element: <ProtectedRoute><CompletarOcorrencia /></ProtectedRoute> },
       { path: 'RegistroOcorrencia', element: <ProtectedRoute><RegistroOcorrencia /></ProtectedRoute> },
-      { path: 'administracao/RegistroBatalhao', element: <ProtectedRoute><RegistroBatalhao /></ProtectedRoute> },
-      { path: 'administracao/CadastroOcorrenciaSecun', element: <ProtectedRoute><CadastroOcorrenciaSecun /></ProtectedRoute> },
       { path: 'EditarOcorrencia/:id', element: <ProtectedRoute><EditarOcorrencia /></ProtectedRoute> },
+      { path: 'administracao/RegistroBatalhao', element: <ProtectedRoute><RegistroBatalhao /></ProtectedRoute> },
+      { path: 'administracao/EditarBatalhao/:id', element: <ProtectedRoute><EditarBatalhao /></ProtectedRoute> },
+      { path: 'administracao/CadastroOcorrenciaSecun', element: <ProtectedRoute><CadastroOcorrenciaSecun /></ProtectedRoute> },
     ],
   },
   {

@@ -1,5 +1,5 @@
 import axios from '../config/axiosConfig';
-import type { BattalionDTO, PaginatorResponse } from '../interfaces/IBattalion';
+import type { BattalionDTO, BattalionRequest, PaginatorResponse } from '../interfaces/IBattalion';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -33,4 +33,19 @@ export const activateBattalion = async (id: number): Promise<void> => {
   await axios.put(`${BASE_URL}/battalion/activate/${id}`, null, {
     params: { id }
   });
+};
+
+export const getBattalionById = async (id: number): Promise<BattalionDTO> => {
+  const response = await axios.get(`${BASE_URL}/battalion/${id}`);
+  return response.data;
+};
+
+export const createBattalion = async (data: BattalionRequest): Promise<BattalionDTO> => {
+  const response = await axios.post(`${BASE_URL}/battalion/created`, data);
+  return response.data;
+};
+
+export const updateBattalion = async (id: number, data: BattalionRequest): Promise<BattalionDTO> => {
+  const response = await axios.put(`${BASE_URL}/battalion/${id}`, data);
+  return response.data;
 };

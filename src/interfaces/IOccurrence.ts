@@ -16,14 +16,21 @@ export interface IOccurrenceRequest {
   address: IAddress;
 }
 
-export interface IUpdateOccurrenceRequest extends IOccurrenceRequest {
+export interface IUpdateOccurrenceRequest {
+  occurrenceHasVictims: boolean;
+  occurrenceRequester: string;
+  occurrenceRequesterPhoneNumber: string;
+  occurrenceSubType: number;
+  address: IAddress;
   occurrenceDetails: string;
-  latitude: number;
-  longitude: number;
-  occurrenceArrivalTime: string;
+  latitude?: number;
+  longitude?: number;
+  occurrenceArrivalTime?: string;
   userIds: number[];
-  vehicles?: number[];
+  vehicles: number[];
   status: number;
+  battalionIds: number[];
+  photoUrls?: string[];
 }
 
 export interface IOccurrenceOnSiteRequest {
@@ -66,3 +73,4 @@ export interface IPaginatedResponse {
   hasNext: boolean;
   items: IOccurrenceDTO[];
 }
+
