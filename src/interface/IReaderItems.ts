@@ -9,4 +9,5 @@ export interface ParamsReaderItems {
   onEdit?: (row: (string | number)[], index: number) => void;
   statusColumnIndex?: number;
   hasStatusFilter?: boolean;
+  searchPlaceholder?: string;
 }

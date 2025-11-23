@@ -15,6 +15,8 @@ import Login from './pages/Login.tsx'
 import Home from './pages/Home.tsx'
 import { CadastroUsuario} from './pages/administracao/UserReg.tsx'
 import Users from './pages/administracao/Users.tsx'
+import EditarUsuario from './pages/administracao/EditarUsuario.tsx'
+import { DetalhesUsuario } from './pages/administracao/DetalhesUsuario.tsx'
 import Relatorios from './pages/Relatorios.tsx'
 import Batalhao from './pages/administracao/batalhao.tsx'
 import Dashboard from './pages/dashboard.tsx'
@@ -35,6 +37,8 @@ const router = createBrowserRouter([
       { path: '', element: <ProtectedRoute><Home /></ProtectedRoute> },
       { path: 'administracao/CadastroUsuario', element: <ProtectedRoute><CadastroUsuario /></ProtectedRoute> },
       { path: 'administracao/Users', element: <ProtectedRoute><Users /></ProtectedRoute> },
+      { path: 'administracao/EditarUsuario/:id', element: <ProtectedRoute><EditarUsuario /></ProtectedRoute> },
+      { path: 'administracao/DetalhesUsuario/:id', element: <ProtectedRoute><DetalhesUsuario /></ProtectedRoute> },
       { path: 'administracao/Relatorios', element: <ProtectedRoute><Relatorios /></ProtectedRoute> },
       { path: 'administracao/Batalhao', element: <ProtectedRoute><Batalhao /></ProtectedRoute> },
       { path: 'dashboard', element: <ProtectedRoute><Dashboard /></ProtectedRoute> },

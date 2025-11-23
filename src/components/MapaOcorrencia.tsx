@@ -1,10 +1,13 @@
 import { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet.heat';
-import { Card, Loader, Text, Button, Group } from '@mantine/core';
+import { Card, Loader, Text, Button, Group, Badge, Center } from '@mantine/core';
 import { IconClipboardList } from '@tabler/icons-react';
-import { mockOccurrences } from '../mock/occurrences';
+import { notifications } from '@mantine/notifications';
+import { occurrenceService } from '../services/occurrenceService';
+import type { IOccurrenceMapInfo } from '../interfaces/IOccurrence';
 import 'leaflet/dist/leaflet.css';
 import classes from '../styles/MapaOcorrencia.module.css';
 import AtendimentoPreHospitalar from '../assets/img/Icons/pins/AtenPreHosp.png';
@@ -24,32 +27,34 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
 });
 
-// Ícone personalizado para os marcadores
-const getIconByType = (title: string) => {
-  if (title.includes('Atendimento Pre Hospitalar')) return L.icon({ iconUrl: AtendimentoPreHospitalar, iconSize: [64, 64] });
-  if (title.includes('Atividade Comunitaria')) return L.icon({ iconUrl: AtividadeComunitaria, iconSize: [64, 64] });
-  if (title.includes('Incendio')) return L.icon({ iconUrl: Incendio, iconSize: [64, 64] });
-  if (title.includes('Prevencao')) return L.icon({ iconUrl: Prevencao, iconSize: [64, 64] });
-  if (title.includes('Produto Perigoso')) return L.icon({ iconUrl: ProdutoPerigoso, iconSize: [64, 64] });
-  if (title.includes('Salvamento')) return L.icon({ iconUrl: Salvamento, iconSize: [64, 64] });
+// Ícone personalizado para os marcadores baseado na natureza
+const getIconByNature = (natureName: string) => {
+  const nature = natureName.toUpperCase();
+  if (nature.includes('ATENDIMENTO') || nature.includes('PRÉ-HOSPITALAR')) {
+    return L.icon({ iconUrl: AtendimentoPreHospitalar, iconSize: [64, 64] });
+  }
+  if (nature.includes('ATIVIDADE') || nature.includes('COMUNITARIA')) {
+    return L.icon({ iconUrl: AtividadeComunitaria, iconSize: [64, 64] });
+  }
+  if (nature.includes('INCÊNDIO') || nature.includes('INCENDIO')) {
+    return L.icon({ iconUrl: Incendio, iconSize: [64, 64] });
+  }
+  if (nature.includes('PREVENÇÃO') || nature.includes('PREVENCAO')) {
+    return L.icon({ iconUrl: Prevencao, iconSize: [64, 64] });
+  }
+  if (nature.includes('PRODUTO') || nature.includes('PERIGOSO')) {
+    return L.icon({ iconUrl: ProdutoPerigoso, iconSize: [64, 64] });
+  }
+  if (nature.includes('SALVAMENTO')) {
+    return L.icon({ iconUrl: Salvamento, iconSize: [64, 64] });
+  }
   return L.icon({ iconUrl: pin, iconSize: [50, 50] });
 };
 
 
-interface Occurrence {
-  id: number;
-  title: string;
-  description: string;
-  latitude: number;
-  longitude: number;
-  date: string;
-}
-
 interface OccurrencesMapContentProps {
-  occurrences: Occurrence[];
-  paramsReaderItems?: {
-    onAtendimentoClick?: (row: any) => void;
-  };
+  occurrences: IOccurrenceMapInfo[];
+  onOccurrenceClick: (id: number) => void;
 }
 
 const ResizeFix = () => {
@@ -109,11 +114,18 @@ const HeatLayer = ({ points }: { points: [number, number, number][] }) => {
 };
 
 // 🔹 Componente separado — mantém o mapa fixo, só atualiza camadas
-function OccurrencesMapContent({ occurrences, paramsReaderItems = {} }: OccurrencesMapContentProps) {
+function OccurrencesMapContent({ occurrences, onOccurrenceClick }: OccurrencesMapContentProps) {
   const heatPoints = useMemo<[number, number, number][]>(
     () => occurrences.map(o => [o.latitude, o.longitude, 1] as [number, number, number]),
     [occurrences]
   );
+
+  useEffect(() => {
+    console.log('OccurrencesMapContent - Total de ocorrências:', occurrences.length);
+    if (occurrences.length > 0) {
+      console.log('Primeira ocorrência:', occurrences[0]);
+    }
+  }, [occurrences]);
 
   return (
     <>
@@ -123,21 +135,24 @@ function OccurrencesMapContent({ occurrences, paramsReaderItems = {} }: Occurren
       />
 
       {occurrences.map(o => (
-        <Marker key={o.id} position={[o.latitude, o.longitude]} icon={getIconByType(o.title)}>
+        <Marker key={o.id} position={[o.latitude, o.longitude]} icon={getIconByNature(o.natureName)}>
           <Popup>
-            <Text fw={600}>{o.title}</Text>
-            <Text size="sm">{o.description}</Text>
-            <Text size="xs" c="dimmed">
+            <Text fw={600}>{o.typeName}</Text>
+            <Text size="sm" fw={500}>{o.subtypeName}</Text>
+            <Text size="xs" mt={5}>{o.description}</Text>
+            <Text size="xs" c="dimmed" mt={5}>
               {new Date(o.date).toLocaleString('pt-BR')}
-              </Text>
-              <Button
-                leftSection={<IconClipboardList size={16} />}
+            </Text>
+            <Button
+              leftSection={<IconClipboardList size={16} />}
               variant="light"
               color="green"
               size="xs"
-              onClick={() => paramsReaderItems.onAtendimentoClick?.(o)}
+              mt={10}
+              fullWidth
+              onClick={() => onOccurrenceClick(o.id)}
             >
-              Ver mais
+              Ver detalhes
             </Button>
           </Popup>
         </Marker>
@@ -148,19 +163,49 @@ function OccurrencesMapContent({ occurrences, paramsReaderItems = {} }: Occurren
   );
 }
 
-export default function MapOccurrences() {
-  const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
+interface MapOccurrencesProps {
+  filteredOccurrences?: IOccurrenceMapInfo[];
+}
+
+export default function MapOccurrences({ filteredOccurrences }: MapOccurrencesProps = {}) {
+  const navigate = useNavigate();
+  const [occurrences, setOccurrences] = useState<IOccurrenceMapInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulação de chamada à API
-    const timeout = setTimeout(() => {
-      setOccurrences(mockOccurrences);
+    // Se receber ocorrências filtradas, usa elas
+    if (filteredOccurrences !== undefined) {
+      setOccurrences(filteredOccurrences);
       setLoading(false);
-    }, 1000);
+      return;
+    }
 
-    return () => clearTimeout(timeout);
-  }, []);
+    // Caso contrário, busca da API
+    const fetchOccurrences = async () => {
+      try {
+        setLoading(true);
+        const data = await occurrenceService.getMapInfo();
+        console.log('Dados recebidos do mapa:', data);
+        console.log('Total de ocorrências:', data?.length || 0);
+        setOccurrences(data);
+      } catch (error) {
+        console.error('Erro ao carregar ocorrências do mapa:', error);
+        notifications.show({
+          title: 'Erro',
+          message: error instanceof Error ? error.message : 'Erro ao carregar ocorrências do mapa',
+          color: 'red',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOccurrences();
+  }, [filteredOccurrences]);
+
+  const handleOccurrenceClick = (id: number) => {
+    navigate(`/detalhesocorrencia/${id}`);
+  };
 
   if (loading) {
     return (
@@ -172,35 +217,39 @@ export default function MapOccurrences() {
 
   return (
     <Card shadow="sm" radius="md" p="md" withBorder>
-      <Text fw={600} mb="sm">
-        Mapa de Ocorrências
-      </Text>
+      <Group justify="space-between" mb="sm">
+        <Text fw={600}>
+          Mapa de Ocorrências
+        </Text>
+        <Badge color="blue" variant="light">
+          {occurrences.length} ocorrência(s)
+        </Badge>
+      </Group>
 
-      {/* 🔹 O MapContainer é fixo — nunca é renderizado novamente */}
-      <div className={classes.mapContainer}>
-        <MapContainer
-          key="occurrences-map"
-          center={[-8.05, -34.88]} // Centralizado em Recife
-          zoom={12}
-          className={classes.map}
-          zoomControl={true}
-          attributionControl={true}
-          minZoom={3}
-          maxZoom={18}
-        >
-        <ResizeFix />
-        <OccurrencesMapContent 
-          occurrences={occurrences}
-          paramsReaderItems={{
-            onAtendimentoClick: (row) => {
-              // Aqui você pode adicionar a lógica de redirecionamento
-              // ou abrir o modal de atendimento
-              console.log('Ocorrência selecionada:', row);
-            }
-          }}
-        />
-        </MapContainer>
-      </div>
+      {occurrences.length === 0 ? (
+        <Center p="xl" style={{ minHeight: 400, background: '#f8f9fa', borderRadius: 8 }}>
+          <Text c="dimmed">Nenhuma ocorrência encontrada para exibir no mapa</Text>
+        </Center>
+      ) : (
+        <div className={classes.mapContainer}>
+          <MapContainer
+            key="occurrences-map"
+            center={[-8.05, -34.88]} // Centralizado em Recife
+            zoom={12}
+            className={classes.map}
+            zoomControl={true}
+            attributionControl={true}
+            minZoom={3}
+            maxZoom={18}
+          >
+            <ResizeFix />
+            <OccurrencesMapContent 
+              occurrences={occurrences}
+              onOccurrenceClick={handleOccurrenceClick}
+            />
+          </MapContainer>
+        </div>
+      )}
     </Card>
   );
 }

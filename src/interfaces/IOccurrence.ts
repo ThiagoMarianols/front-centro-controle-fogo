@@ -74,3 +74,39 @@ export interface IPaginatedResponse {
   items: IOccurrenceDTO[];
 }
 
+export interface IOccurrenceType {
+  id: number;
+  name: string;
+}
+
+export interface IOccurrenceSubtype {
+  id: number;
+  name: string;
+}
+
+export interface IOccurrenceStatus {
+  id: number;
+  name: string;
+}
+
+export interface IOccurrenceNature {
+  id: number;
+  name: string;
+}
+
+export interface IOccurrenceMapInfo {
+  id: number;
+  typeId: number;
+  typeName: string;
+  subtypeId: number;
+  subtypeName: string;
+  natureId: number;
+  natureName: string;
+  statusId: number;
+  statusName: string;
+  description: string;
+  latitude: number;
+  longitude: number;
+  date: string;
+}
+

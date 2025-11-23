@@ -1,4 +1,15 @@
-import type { IOccurrenceRequest, IOccurrenceOnSiteRequest, IPaginatedResponse, IOccurrenceDTO, IUpdateOccurrenceRequest } from '../interfaces/IOccurrence';
+import type { 
+  IOccurrenceRequest, 
+  IOccurrenceOnSiteRequest, 
+  IPaginatedResponse, 
+  IOccurrenceDTO, 
+  IUpdateOccurrenceRequest,
+  IOccurrenceType,
+  IOccurrenceSubtype,
+  IOccurrenceStatus,
+  IOccurrenceNature,
+  IOccurrenceMapInfo
+} from '../interfaces/IOccurrence';
 
 const API_URL = `${import.meta.env.VITE_BASE_URL}/occurrences`;
 
@@ -178,6 +189,106 @@ export const occurrenceService = {
     }
 
     return await response.text();
+  },
+
+  async getTypes(): Promise<IOccurrenceType[]> {
+    const response = await fetch(`${API_URL}/types`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao buscar tipos de ocorrência');
+    }
+
+    return await response.json();
+  },
+
+  async getSubtypes(): Promise<IOccurrenceSubtype[]> {
+    const response = await fetch(`${API_URL}/subtypes`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao buscar subtipos de ocorrência');
+    }
+
+    return await response.json();
+  },
+
+  async getStatus(): Promise<IOccurrenceStatus[]> {
+    const response = await fetch(`${API_URL}/status`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao buscar status de ocorrência');
+    }
+
+    return await response.json();
+  },
+
+  async getNatures(): Promise<IOccurrenceNature[]> {
+    const response = await fetch(`${API_URL}/natures`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao buscar naturezas de ocorrência');
+    }
+
+    return await response.json();
+  },
+
+  async getMapInfo(): Promise<IOccurrenceMapInfo[]> {
+    const url = `${API_URL}/infomap`;
+    console.log('Buscando ocorrências do mapa em:', url);
+    
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
+
+      console.log('Status da resposta:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Erro na resposta:', errorText);
+        throw new Error(`Erro ao buscar informações do mapa: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('Dados recebidos da API:', data);
+      console.log('Tipo de dados:', Array.isArray(data) ? 'Array' : typeof data);
+      console.log('Quantidade de itens:', Array.isArray(data) ? data.length : 'N/A');
+      
+      // Se a resposta for um objeto com propriedade items ou data
+      if (data && !Array.isArray(data)) {
+        if (data.items && Array.isArray(data.items)) {
+          console.log('Dados estão em data.items');
+          return data.items;
+        }
+        if (data.data && Array.isArray(data.data)) {
+          console.log('Dados estão em data.data');
+          return data.data;
+        }
+      }
+      
+      // Se já for um array, retorna direto
+      if (Array.isArray(data)) {
+        return data;
+      }
+      
+      console.warn('Formato de resposta inesperado:', data);
+      return [];
+    } catch (error) {
+      console.error('Erro ao buscar informações do mapa:', error);
+      throw error;
+    }
   },
   
   getById: getOccurrenceById,
