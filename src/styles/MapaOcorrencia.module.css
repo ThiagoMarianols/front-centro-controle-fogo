@@ -1,0 +1,63 @@
+.mapContainer {
+  position: relative;
+  height: 80vh;
+  width: 70vw;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.loaderContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 50px;
+}
+
+.map {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  z-index: 1; /* Ensure map stays below popups */
+}
+
+/* Fix for date picker and other popups */
+:global(.mantine-DatePicker-dropdown) {
+  z-index: 1000 !important;
+}
+
+:global(.mantine-Popover-dropdown) {
+  z-index: 1000 !important;
+}
+
+:global(.mantine-Select-dropdown) {
+  z-index: 1000 !important;
+}
+
+:global(.mantine-Modal-root) {
+  z-index: 1001 !important;
+}
+
+/* Garantir que os controles do mapa sejam acessíveis */
+:global(.leaflet-top) {
+  z-index: 1000 !important;
+  position: absolute;
+}
+
+:global(.leaflet-bottom) {
+  z-index: 1000 !important;
+  position: absolute;
+}
+
+:global(.leaflet-control-zoom) {
+  margin: 10px !important;
+  border: 2px solid rgba(0,0,0,0.2) !important;
+  border-radius: 4px !important;
+  background: white !important;
+}
+
+.button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+}

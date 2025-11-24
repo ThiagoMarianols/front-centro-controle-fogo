@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ReadItems } from '../../components/ReadItems';
 import { 
   getBattalionsPaginated, 
@@ -6,12 +7,14 @@ import {
   activateBattalion
 } from '../../services/battalionService';
 import type { BattalionDTO } from '../../interfaces/IBattalion';
+import { extractBattalionAddress } from '../../utils/battalionAddress';
 import { notifications } from '@mantine/notifications';
 import { Center, Loader } from '@mantine/core';
 
 const Batalhao = () => {
   const [battalions, setBattalions] = useState<BattalionDTO[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const fetchBattalions = async () => {
     try {
@@ -76,6 +79,13 @@ const Batalhao = () => {
     }
   };
 
+  const handleEdit = (row: (string | number)[]) => {
+    const id = Number(row[0]);
+    if (!Number.isNaN(id)) {
+      navigate(`/administracao/EditarBatalhao/${id}`);
+    }
+  };
+
   if (loading) {
     return (
       <Center style={{ height: '100vh' }}>
@@ -87,19 +97,24 @@ const Batalhao = () => {
   return (
     <ReadItems 
       paramsReaderItems={{
-        headers: ['ID', 'Nome', 'Email', 'Telefone', 'Status'],
-        body: battalions.map(battalion => [
-          battalion.id,
-          battalion.name,
-          battalion.email,
-          battalion.phoneNumber,
-          battalion.active ? 'Ativo' : 'Inativo'
-        ]),
+        headers: ['ID', 'Nome', 'Email', 'Telefone', 'Cidade', 'Status'],
+        body: battalions.map(battalion => {
+          const address = extractBattalionAddress(battalion);
+          return [
+            battalion.id,
+            battalion.name,
+            battalion.email,
+            battalion.phoneNumber,
+            address?.city || '-',
+            battalion.active ? 'Ativo' : 'Inativo'
+          ];
+        }),
         titulo: "Batalhões",
         textButton: "Criar Batalhão",
-        url: "/CadastroBatalhao",
+        url: "/administracao/RegistroBatalhao",
         hasStatusFilter: true,
-        statusColumnIndex: 4,
+        statusColumnIndex: 5,
+        onEdit: handleEdit,
         onDelete: handleDeactivate,
         onActivate: handleActivate
       }} 

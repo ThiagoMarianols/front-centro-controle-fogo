@@ -108,35 +108,6 @@ const Ocorrencia = () => {
     }
   };
 
-  const handleAtendimentoClick = (item: any) => {
-    const status = item[4];
-    const isActive = item[5] === 'Ativo';
-    
-    if (!isActive) {
-      notifications.show({
-        title: 'Atenção',
-        message: 'Não é possível atender uma ocorrência inativa',
-        color: 'yellow',
-      });
-      return;
-    }
-
-    if (status !== 'EM_ATENDIMENTO') {
-      notifications.show({
-        title: 'Atenção',
-        message: 'Apenas ocorrências em atendimento podem ser completadas',
-        color: 'yellow',
-      });
-      return;
-    }
-    
-    navigate('/CompletarOcorrencia', { 
-      state: { 
-        itemId: item[0], 
-      } 
-    });
-  };
-
   if (loading) {
     return (
       <Center style={{ height: '100vh' }}>
@@ -174,8 +145,6 @@ const Ocorrencia = () => {
           url: "/RegistroOcorrencia",
           hasStatusFilter: true,
           statusColumnIndex: 5,
-          showAtendimento: true,
-          onAtendimentoClick: handleAtendimentoClick,
           onEdit: handleEdit,
           onDelete: handleDeactivate,
           onActivate: handleActivate

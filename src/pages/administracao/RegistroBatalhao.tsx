@@ -1,118 +1,58 @@
-import classes from '../../styles/RegistroOcorrencia.module.css';
-import {  
-  Select,
-  Checkbox,
-  Group,
-  TextInput,
-  Paper,
-  Title,
-  Button 
-} from '@mantine/core';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { notifications } from '@mantine/notifications';
+import { BattalionForm, type BattalionFormValues } from '../../components/battalion/BattalionForm';
+import { createBattalion } from '../../services/battalionService';
 
 export function RegistroBatalhao() {
-    return (
-    <div className={classes.mainContent}>
-      <div className={classes.centerWrap}>
-        <Title order={2} className={classes.title}>Registro de Batalhão</Title>
+  const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
 
-        <div className={classes.cardsStack}>
-          <Paper withBorder shadow="sm" p="md" radius="md" className={classes.paper}>
-            <Title order={3} className={classes.cardTitle}>Dados do Batalhão</Title>
-            <form className={classes.form} onSubmit={(e) => e.preventDefault()}>
-              <Select
-                className={classes.fullWidthField}
-                label="Tipo de Ocorrência"
-                placeholder="Informe o tipo de ocorrência"
-                data={['Incêndio urbano', 'Acidente de trânsito', 'Resgate em altura', 'Afogamento', 'Acidente com produtos perigosos']}
-              />
+  const handleSubmit = async (values: BattalionFormValues) => {
+    try {
+      setSubmitting(true);
+      await createBattalion({
+        name: values.name,
+        email: values.email,
+        phoneNumber: values.phoneNumber,
+        address: {
+          street: values.street,
+          number: Number(values.number),
+          complement: values.complement,
+          neighborhood: values.neighborhood,
+          city: values.city,
+          state: values.state,
+          zipCode: values.cep
+        }
+      });
 
-              <Checkbox.Group
-                className={classes.fullWidthField}
-                label="Existência de vítimas"
-                description="Existem vítimas?"
-                withAsterisk
-              >
-                <Group mt="xs">
-                  <Checkbox value="Sim" label="Sim" />
-                  <Checkbox value="Não" label="Não" />
-                </Group>
-              </Checkbox.Group>
-            </form>
-          </Paper>
+      notifications.show({
+        title: 'Sucesso',
+        message: 'Batalhão criado com sucesso',
+        color: 'green'
+      });
 
-          <Paper withBorder shadow="sm" p="md" radius="md" className={classes.paper}>
-            <Title order={3} className={classes.cardTitle}>Local da ocorrência</Title>
-            <div className={classes.formGrid}>
-              <TextInput
-                label="Endereço"
-                placeholder="Endereço"
-                description="Endereço do local"
-                inputWrapperOrder={['label', 'error', 'input', 'description']}
-              />
-              <TextInput
-                label="Referência"
-                placeholder="Referência"
-                description="Referência do local"
-                inputWrapperOrder={['label', 'error', 'input', 'description']}
-              />
-              <TextInput
-                label="Tipo de local"
-                placeholder="Tipo de local"
-                description="incêndio urbano, florestal, etc."
-                inputWrapperOrder={['label', 'error', 'input', 'description']}
-              />
-              <TextInput
-                label="Riscos adicionais"
-                placeholder="Riscos adicionais"
-                description="Ex: gás, energia, produtos químicos"
-                inputWrapperOrder={['label', 'error', 'input', 'description']}
-              />
-              <Checkbox.Group
-                className={classes.fullWidthField}
-                label="Atendimento prioritário?"
-                description="Exige atendimento prioritário?"
-                withAsterisk
-              >
-                <Group mt="xs">
-                  <Checkbox value="Sim" label="Sim" />
-                  <Checkbox value="Não" label="Não" />
-                </Group>
-              </Checkbox.Group>
-            </div>
-          </Paper>
+      navigate('/administracao/Batalhao');
+    } catch (error: any) {
+      console.error('Erro ao criar batalhão:', error);
+      notifications.show({
+        title: 'Erro',
+        message: error.response?.data?.message || 'Não foi possível criar o batalhão',
+        color: 'red'
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
-          <Paper withBorder shadow="sm" p="md" radius="md" className={classes.paper}>
-            <Title order={3} className={classes.cardTitle}>Dados do solicitante</Title>
-            <div className={classes.formGrid}>
-              <TextInput
-                label="Nome do solicitante"
-                placeholder="Nome do solicitante"
-                description="Nome do solicitante"
-                inputWrapperOrder={['label', 'error', 'input', 'description']}
-              />
-              <TextInput
-                label="Telefone"
-                placeholder="Telefone"
-                description="Telefone do solicitante"
-                inputWrapperOrder={['label', 'error', 'input', 'description']}
-              />
-            </div>
-            <Checkbox.Group
-                className={classes.fullWidthField}
-                label="Atendimento prioritário?"
-                description="Exige atendimento prioritário?"
-                withAsterisk
-              >
-                <Group mt="xs">
-                  <Checkbox value="Sim" label="Sim" />
-                  <Checkbox value="Não" label="Não" />
-                </Group>
-              </Checkbox.Group>
-          </Paper>
-        </div>
-        <Button variant="filled" className={classes.button}>Registrar</Button>
-      </div>
-    </div>
+  return (
+    <BattalionForm
+      title="Registro de Batalhão"
+      submitLabel="Registrar"
+      onSubmit={handleSubmit}
+      onCancel={() => navigate('/administracao/Batalhao')}
+      submitting={submitting}
+    />
   );
 }
 

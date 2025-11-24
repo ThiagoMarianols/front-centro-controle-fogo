@@ -108,16 +108,16 @@ export function RegistroOcorrencia() {
         occurrenceHasVictims: temVitimas === 'Sim',
         occurrenceRequester: nomeSolicitante,
         occurrenceRequesterPhoneNumber: telefoneSolicitante,
-        occurrenceSubType: tipoOcorrencia,
+        occurrenceSubType: Number(tipoOcorrencia),
         address: {
           zipCode: cep.replace(/\D/g, ''),
           street: endereco.logradouro,
-          number: endereco.numero,
+          number: Number(endereco.numero),
           neighborhood: endereco.bairro,
           city: endereco.cidade,
           state: endereco.estado,
           complement: endereco.complemento
-        }
+        },
       };
 
       await occurrenceService.create(payload);
@@ -268,11 +268,11 @@ export function RegistroOcorrencia() {
                 value={tipoOcorrencia}
                 onChange={setTipoOcorrencia}
                 data={[
-                  'Incêndio urbano',
-                  'Acidente de trânsito',
-                  'Resgate em altura',
-                  'Afogamento',
-                  'Acidente com produtos perigosos'
+                  { value: '0', label: 'Incêndio urbano' },
+                  { value: '1', label: 'Acidente de trânsito' },
+                  { value: '2', label: 'Resgate em altura' },
+                  { value: '3', label: 'Afogamento' },
+                  { value: '4', label: 'Acidente com produtos perigosos' }
                 ]}
                 required
               />

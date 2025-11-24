@@ -1,124 +1,152 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ReadItems } from '../../components/ReadItems';
 import { getUsersPaginated, deactivateUser, activateUser } from '../../services/authService';
 import type { PaginatorGeneric, UserPaginatorDTO } from '../../interface/Paginator';
-import { Loader, Center, Alert } from '@mantine/core';
-import { IconAlertCircle } from '@tabler/icons-react';
+import { Loader, Center } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 
 const Users = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<UserPaginatorDTO[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchAllUsers = async () => {
-      try {
-        setLoading(true);
-        const [activeUsers, inactiveUsers] = await Promise.all([
-          getUsersPaginated(1, 1000, undefined, true),
-          getUsersPaginated(1, 1000, undefined, false)
-        ]);
-        setUsers([...activeUsers.items, ...inactiveUsers.items]);
-        setError(null);
-      } catch (err) {
-        console.error('Erro ao buscar usuários:', err);
-        setError('Erro ao carregar usuários. Tente novamente.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAllUsers();
-  }, []);
-
-  const handleDeactivate = async (row: (string | number)[]) => {
-    const userId = row[0] as number;
-    const userName = row[1] as string;
-
+  const fetchUsers = async () => {
     try {
-      await deactivateUser(userId);
-      notifications.show({
-        title: 'Sucesso',
-        message: `Usuário ${userName} desativado com sucesso`,
-        color: 'green',
-      });
-      
-      setUsers(prevUsers => 
-        prevUsers.map(user => 
-          user.id === userId ? { ...user, active: false } : user
-        )
-      );
+      setLoading(true);
+      const [activeUsers, inactiveUsers] = await Promise.all([
+        getUsersPaginated(1, 1000, undefined, true),
+        getUsersPaginated(1, 1000, undefined, false)
+      ]);
+      setUsers([...activeUsers.items, ...inactiveUsers.items]);
     } catch (err) {
-      console.error('Erro ao desativar usuário:', err);
       notifications.show({
         title: 'Erro',
-        message: 'Erro ao desativar usuário. Tente novamente.',
+        message: err instanceof Error ? err.message : 'Erro ao carregar usuários',
+        color: 'red',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  useEffect(() => {
+    const handleRowClick = (event: Event) => {
+      const target = event.target as HTMLElement;
+      const row = target.closest('tr');
+      
+      if (row && target.tagName === 'TD') {
+        const cells = row.querySelectorAll('td');
+        if (cells.length > 0 && target === cells[0]) {
+          const id = cells[0].textContent;
+          if (id) {
+            navigate(`/administracao/DetalhesUsuario/${id}`);
+          }
+        }
+      }
+    };
+
+    const table = document.querySelector('table tbody');
+    if (table) {
+      table.addEventListener('click', handleRowClick);
+    }
+
+    return () => {
+      if (table) {
+        table.removeEventListener('click', handleRowClick);
+      }
+    };
+  }, [users, navigate]);
+
+  const handleDeactivate = async (row: (string | number)[]) => {
+    try {
+      const id = Number(row[0]);
+      await deactivateUser(id);
+      notifications.show({
+        title: 'Sucesso',
+        message: 'Usuário desativado com sucesso',
+        color: 'green',
+      });
+      await fetchUsers();
+    } catch (error) {
+      notifications.show({
+        title: 'Erro',
+        message: 'Erro ao desativar usuário',
         color: 'red',
       });
     }
   };
 
   const handleActivate = async (row: (string | number)[]) => {
-    const userId = row[0] as number;
-    const userName = row[1] as string;
-
     try {
-      await activateUser(userId);
+      const id = Number(row[0]);
+      await activateUser(id);
       notifications.show({
         title: 'Sucesso',
-        message: `Usuário ${userName} ativado com sucesso`,
+        message: 'Usuário ativado com sucesso',
         color: 'green',
       });
-      
-      setUsers(prevUsers => 
-        prevUsers.map(user => 
-          user.id === userId ? { ...user, active: true } : user
-        )
-      );
-    } catch (err) {
-      console.error('Erro ao ativar usuário:', err);
+      await fetchUsers();
+    } catch (error) {
       notifications.show({
         title: 'Erro',
-        message: 'Erro ao ativar usuário. Tente novamente.',
+        message: 'Erro ao ativar usuário',
         color: 'red',
       });
     }
   };
 
+  const handleEdit = (row: (string | number)[]) => {
+    const id = row[0];
+    if (id) {
+      navigate(`/administracao/EditarUsuario/${id}`);
+    }
+  };
+
   if (loading) {
     return (
-      <Center style={{ height: '50vh' }}>
-        <Loader size="lg" />
+      <Center style={{ height: '100vh' }}>
+        <Loader size="xl" />
       </Center>
-    );
-  }
-
-  if (error) {
-    return (
-      <Alert icon={<IconAlertCircle size={16} />} title="Erro" color="red">
-        {error}
-      </Alert>
     );
   }
 
   return (
     <>
-      <ReadItems paramsReaderItems={{
-        headers: ['ID', 'Nome', 'Matrícula', 'Status'],
-        body: users.map(user => [
-          user.id,
-          user.normalizedName || 'N/A',
-          user.matriculates || 'N/A',
-          user.active ? 'Ativo' : 'Inativo'
-        ]),
-        titulo: "Usuários",
-        textButton: "Criar novo usuário",
-        url: "/administracao/CadastroUsuario",
-        onDelete: handleDeactivate,
-        onActivate: handleActivate,
-        statusColumnIndex: 3,
-        hasStatusFilter: true
-      }} />
+      <style>{`
+        .mantine-Table-table tbody tr td:first-child {
+          color: #228be6 !important;
+          font-weight: 600;
+          text-decoration: underline;
+          cursor: pointer;
+        }
+        .mantine-Table-table tbody tr td:first-child:hover {
+          color: #1971c2 !important;
+        }
+      `}</style>
+      <ReadItems 
+        paramsReaderItems={{
+          headers: ['ID', 'Nome', 'Matrícula', 'Status'],
+          body: users.map(user => [
+            user.id,
+            user.normalizedName || 'N/A',
+            user.matriculates || 'N/A',
+            user.active ? 'Ativo' : 'Inativo'
+          ]),
+          titulo: "Usuários",
+          textButton: "Criar Usuário",
+          url: "/administracao/CadastroUsuario",
+          hasStatusFilter: true,
+          statusColumnIndex: 3,
+          onEdit: handleEdit,
+          onDelete: handleDeactivate,
+          onActivate: handleActivate
+        }} 
+      />
     </>
   );
 }

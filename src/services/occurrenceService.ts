@@ -1,4 +1,15 @@
-import type { IOccurrenceRequest, IOccurrenceOnSiteRequest, IPaginatedResponse, IOccurrenceDTO } from '../interfaces/IOccurrence';
+import type { 
+  IOccurrenceRequest, 
+  IOccurrenceOnSiteRequest, 
+  IPaginatedResponse, 
+  IOccurrenceDTO, 
+  IUpdateOccurrenceRequest,
+  IOccurrenceType,
+  IOccurrenceSubtype,
+  IOccurrenceStatus,
+  IOccurrenceNature,
+  IOccurrenceMapInfo
+} from '../interfaces/IOccurrence';
 
 const API_URL = `${import.meta.env.VITE_BASE_URL}/occurrences`;
 
@@ -48,7 +59,7 @@ export async function getOccurrencesPaginated(
 
 export async function deactivateOccurrence(id: number): Promise<void> {
   const response = await fetch(`${API_URL}/deactivate/${id}`, {
-    method: 'PUT',
+    method: 'PATCH',
     headers: getAuthHeaders(),
   });
 
@@ -60,7 +71,7 @@ export async function deactivateOccurrence(id: number): Promise<void> {
 
 export async function activateOccurrence(id: number): Promise<void> {
   const response = await fetch(`${API_URL}/activate/${id}`, {
-    method: 'PUT',
+    method: 'PATCH',
     headers: getAuthHeaders(),
   });
 
@@ -84,7 +95,7 @@ const getOccurrenceById = async (id: number): Promise<IOccurrenceDTO> => {
   return await response.json();
 };
 
-const updateOccurrence = async (id: number, data: IOccurrenceRequest): Promise<void> => {
+const updateOccurrence = async (id: number, data: IUpdateOccurrenceRequest): Promise<void> => {
   const headers = {
     ...getAuthHeaders(),
     'Content-Type': 'application/json'
@@ -125,23 +136,49 @@ const updateOccurrence = async (id: number, data: IOccurrenceRequest): Promise<v
 
 export const occurrenceService = {
   async create(data: IOccurrenceRequest): Promise<string> {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(data),
-    });
+    try {
+      const rawHeaders = getAuthHeaders() as Record<string, string>;
+      const maskedHeaders = {
+        ...rawHeaders,
+        Authorization: rawHeaders?.['Authorization']
+          ? `Bearer ${rawHeaders['Authorization'].slice(7, 11)}***`
+          : undefined,
+      };
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText || 'Erro ao criar ocorrência');
+      console.log('Criar ocorrência - URL:', API_URL);
+      console.log('Criar ocorrência - Headers:', maskedHeaders);
+      console.log('Criar ocorrência - Payload:', JSON.stringify(data));
+
+      const response = await fetch(`${API_URL}/register`, {
+        method: 'POST',
+        headers: rawHeaders,
+        body: JSON.stringify(data),
+      });
+
+      console.log('Criar ocorrência - Status:', response.status, response.statusText);
+      try {
+        const preview = await response.clone().text();
+        console.log('Criar ocorrência - Corpo resposta (preview):', preview);
+      } catch (e) {
+        console.log('Criar ocorrência - Falha ao ler corpo de resposta para preview:', e);
+      }
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Criar ocorrência - Erro:', errorText);
+        throw new Error(errorText || 'Erro ao criar ocorrência');
+      }
+
+      return await response.text();
+    } catch (err) {
+      console.error('Criar ocorrência - Falha na requisição:', err);
+      throw err instanceof Error ? err : new Error('Erro desconhecido ao criar ocorrência');
     }
-
-    return await response.text();
   },
 
-  async complete(id: number, data: IOccurrenceOnSiteRequest): Promise<string> {
-    const response = await fetch(`${API_URL}/complete/${id}`, {
-      method: 'PUT',
+  async complete(data: any): Promise<string> {
+    const response = await fetch(`${API_URL}/complement`, {
+      method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
@@ -152,6 +189,100 @@ export const occurrenceService = {
     }
 
     return await response.text();
+  },
+
+  async getTypes(): Promise<IOccurrenceType[]> {
+    const response = await fetch(`${API_URL}/types`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao buscar tipos de ocorrência');
+    }
+
+    return await response.json();
+  },
+
+  async getSubtypes(): Promise<IOccurrenceSubtype[]> {
+    const response = await fetch(`${API_URL}/subtypes`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao buscar subtipos de ocorrência');
+    }
+
+    return await response.json();
+  },
+
+  async getStatus(): Promise<IOccurrenceStatus[]> {
+    const response = await fetch(`${API_URL}/status`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao buscar status de ocorrência');
+    }
+
+    return await response.json();
+  },
+
+  async getNatures(): Promise<IOccurrenceNature[]> {
+    const response = await fetch(`${API_URL}/natures`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao buscar naturezas de ocorrência');
+    }
+
+    return await response.json();
+  },
+
+  async getMapInfo(): Promise<IOccurrenceMapInfo[]> {
+    const url = `${API_URL}/infomap`;
+    
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Erro na resposta:', errorText);
+        throw new Error(`Erro ao buscar informações do mapa: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      
+      // Se a resposta for um objeto com propriedade items ou data
+      if (data && !Array.isArray(data)) {
+        if (data.items && Array.isArray(data.items)) {
+          console.log('Dados estão em data.items');
+          return data.items;
+        }
+        if (data.data && Array.isArray(data.data)) {
+          console.log('Dados estão em data.data');
+          return data.data;
+        }
+      }
+      
+      // Se já for um array, retorna direto
+      if (Array.isArray(data)) {
+        return data;
+      }
+      
+      console.warn('Formato de resposta inesperado:', data);
+      return [];
+    } catch (error) {
+      console.error('Erro ao buscar informações do mapa:', error);
+      throw error;
+    }
   },
   
   getById: getOccurrenceById,

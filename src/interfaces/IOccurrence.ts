@@ -1,7 +1,7 @@
 export interface IAddress {
   zipCode: string;
   street: string;
-  number: string;
+  number: number;
   neighborhood: string;
   city: string;
   state: string;
@@ -12,16 +12,25 @@ export interface IOccurrenceRequest {
   occurrenceHasVictims: boolean;
   occurrenceRequester: string;
   occurrenceRequesterPhoneNumber: string;
-  occurrenceSubType: string;
+  occurrenceSubType: number;
   address: IAddress;
 }
 
-export interface IUpdateOccurrenceRequest extends IOccurrenceRequest {
+export interface IUpdateOccurrenceRequest {
+  occurrenceHasVictims: boolean;
+  occurrenceRequester: string;
+  occurrenceRequesterPhoneNumber: string;
+  occurrenceSubType: number;
+  address: IAddress;
   occurrenceDetails: string;
-  latitude: number;
-  longitude: number;
-  occurrenceArrivalTime: string;
+  latitude?: number;
+  longitude?: number;
+  occurrenceArrivalTime?: string;
   userIds: number[];
+  vehicles: number[];
+  status: number;
+  battalionIds: number[];
+  photoUrls?: string[];
 }
 
 export interface IOccurrenceOnSiteRequest {
@@ -64,3 +73,40 @@ export interface IPaginatedResponse {
   hasNext: boolean;
   items: IOccurrenceDTO[];
 }
+
+export interface IOccurrenceType {
+  id: number;
+  name: string;
+}
+
+export interface IOccurrenceSubtype {
+  id: number;
+  name: string;
+}
+
+export interface IOccurrenceStatus {
+  id: number;
+  name: string;
+}
+
+export interface IOccurrenceNature {
+  id: number;
+  name: string;
+}
+
+export interface IOccurrenceMapInfo {
+  id: number;
+  typeId: number;
+  typeName: string;
+  subtypeId: number;
+  subtypeName: string;
+  natureId: number;
+  natureName: string;
+  statusId: number;
+  statusName: string;
+  description: string;
+  latitude: number;
+  longitude: number;
+  date: string;
+}
+

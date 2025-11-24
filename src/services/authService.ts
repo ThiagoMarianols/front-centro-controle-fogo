@@ -2,6 +2,7 @@ import axios from '../config/axiosConfig';
 import type { LoginRequest, LoginResponse } from '../interface/Login';
 import { API_URL } from '../context/authContext';
 import type { UserInfoDTO } from '../interface/User';
+import type { UserRegisterDTO, UserDetailDTO, UserListDTO, UserUpdateDTO } from '../interfaces/IUser';
 
 
 export async function loginService(data: LoginRequest): Promise<LoginResponse> {
@@ -67,13 +68,31 @@ export async function getUsersPaginated(
 }
 
 export async function deactivateUser(id: number): Promise<string> {
-  const response = await axios.put(`${API_URL}/auth/deactivate/${id}`);
+  const response = await axios.patch(`${API_URL}/auth/deactivate/${id}`);
   return response.data;
 }
 
 export async function activateUser(id: number): Promise<string> {
-  const response = await axios.put(`${API_URL}/auth/activate/${id}`);
+  const response = await axios.patch(`${API_URL}/auth/activate/${id}`);
   return response.data;
 }
-  
 
+export async function createUser(data: UserRegisterDTO): Promise<UserDetailDTO> {
+  const response = await axios.post(`${API_URL}/auth/created/user`, data);
+  return response.data;
+}
+
+export async function getUserById(id: number): Promise<UserDetailDTO> {
+  const response = await axios.get(`${API_URL}/auth/${id}`);
+  return response.data;
+}
+
+export async function updateUser(id: number, data: UserUpdateDTO): Promise<UserDetailDTO> {
+  const response = await axios.put(`${API_URL}/auth/${id}`, data);
+  return response.data;
+}
+
+export async function getAllUsers(): Promise<UserListDTO[]> {
+  const response = await axios.get(`${API_URL}/auth/all`);
+  return response.data;
+}
