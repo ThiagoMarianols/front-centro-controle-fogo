@@ -166,7 +166,8 @@ export function CadastroUsuario() {
             neighborhood,
             city,
             state: state!.split('(')[1].replace(')', '').trim()
-          }
+          },
+          roleIds: []
         };
 
         console.log('Sending userData to backend:', userData);
