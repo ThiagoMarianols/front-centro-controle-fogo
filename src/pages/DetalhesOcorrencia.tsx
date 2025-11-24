@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Paper, Title, Button, Grid, Text, Badge, Loader, Center, Group, Divider, Card } from '@mantine/core';
-import { IconArrowLeft, IconMapPin, IconPhone, IconUser, IconClock, IconFileText, IconInfoCircle } from '@tabler/icons-react';
+import { Paper, Title, Button, Grid, Text, Badge, Loader, Center, Group, Divider, Card, Image, ActionIcon } from '@mantine/core';
+import { IconArrowLeft, IconMapPin, IconPhone, IconUser, IconClock, IconFileText, IconInfoCircle, IconPhoto, IconEye } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { occurrenceService } from '../services/occurrenceService';
 import type { IOccurrenceDTO } from '../interfaces/IOccurrence';
@@ -12,6 +12,21 @@ export function DetalhesOcorrencia() {
   const navigate = useNavigate();
   const [occurrence, setOccurrence] = useState<IOccurrenceDTO | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [modalOpened, setModalOpened] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
+
+  const handleViewPhoto = (url: string) => {
+    setImageLoading(true);
+    setSelectedPhoto(url);
+    setModalOpened(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpened(false);
+    setSelectedPhoto(null);
+    setImageLoading(false);
+  };
 
   useEffect(() => {
     const fetchOccurrence = async () => {
@@ -239,7 +254,177 @@ export function DetalhesOcorrencia() {
             </Grid>
           </Card>
         )}
+
+        {/* Fotos da Ocorrência */}
+        {(occurrence as any).photoUrls && (occurrence as any).photoUrls.length > 0 && (
+          <Card shadow="sm" padding="lg" radius="md" withBorder>
+            <Group mb="md">
+              <IconPhoto size={24} style={{ color: '#B13433' }} />
+              <Title order={4} style={{ color: '#B13433' }}>Fotos da Ocorrência</Title>
+            </Group>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '1rem' }}>
+              {(occurrence as any).photoUrls
+                .filter((url: string) => !url.includes('example.com'))
+                .map((url: string, index: number) => (
+                  <div
+                    key={index}
+                    style={{
+                      position: 'relative',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      border: '1px solid #e0e0e0',
+                      aspectRatio: '1',
+                    }}
+                  >
+                    <Image
+                      src={url}
+                      alt={`Foto ${index + 1}`}
+                      fit="cover"
+                      style={{ width: '100%', height: '100%', cursor: 'pointer' }}
+                      onClick={() => handleViewPhoto(url)}
+                    />
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '4px',
+                        right: '4px',
+                      }}
+                    >
+                      <ActionIcon
+                        size="sm"
+                        variant="filled"
+                        color="blue"
+                        onClick={() => handleViewPhoto(url)}
+                        title="Visualizar"
+                      >
+                        <IconEye size={14} />
+                      </ActionIcon>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </Card>
+        )}
       </div>
+
+      {/* Modal de visualização de foto */}
+      {modalOpened && selectedPhoto && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={handleCloseModal}
+        >
+          <div
+            style={{
+              position: 'relative',
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              padding: '16px',
+              width: '90vw',
+              height: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              borderBottom: '1px solid #e0e0e0',
+              paddingBottom: '10px',
+              marginBottom: '12px',
+              flexShrink: 0
+            }}>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>Visualização da Foto</h3>
+              <button
+                onClick={handleCloseModal}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '4px',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#f8f9fa',
+              borderRadius: '8px',
+              padding: '16px',
+              overflow: 'hidden',
+              position: 'relative',
+              minHeight: 0,
+              minWidth: 0
+            }}>
+              {imageLoading && (
+                <div style={{ 
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  textAlign: 'center',
+                  zIndex: 1
+                }}>
+                  <Loader size="lg" />
+                  <p style={{ marginTop: '16px', color: '#666' }}>Carregando imagem...</p>
+                </div>
+              )}
+              <img
+                src={selectedPhoto}
+                alt="Visualização da foto"
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  width: 'auto',
+                  height: 'auto',
+                  objectFit: 'contain',
+                  display: 'block',
+                  transition: 'opacity 0.3s ease',
+                  margin: 'auto',
+                  opacity: imageLoading ? 0 : 1
+                }}
+                onError={() => {
+                  setImageLoading(false);
+                  notifications.show({
+                    title: 'Erro',
+                    message: 'Não foi possível carregar a imagem',
+                    color: 'red'
+                  });
+                }}
+                onLoad={() => {
+                  setImageLoading(false);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

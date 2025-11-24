@@ -2,6 +2,157 @@
   width: 100%;
   min-height: 100vh;
   overflow-x: hidden;
+  background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+/* Hero Section */
+.heroSection {
+  padding: 2rem 0;
+  background: linear-gradient(135deg, #B13433 0%, #8B0000 100%);
+}
+
+.carouselRoot {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.carouselControls button {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: none;
+  color: #B13433;
+}
+
+.carouselControls button:hover {
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.carouselIndicator {
+  background-color: rgba(255, 255, 255, 0.5);
+  width: 12px;
+  height: 12px;
+  transition: all 0.3s ease;
+}
+
+.carouselIndicator[data-active] {
+  background-color: #ffffff;
+  width: 32px;
+}
+
+.slideContainer {
+  height: 400px;
+  width: 100%;
+}
+
+.slideImage {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.slideContent {
+  text-align: center;
+  padding: 2rem;
+  max-width: 800px;
+  z-index: 2;
+}
+
+.slideTitle {
+  color: white;
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.slideDescription {
+  color: white;
+  font-size: 1.25rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Stats Section */
+.statsSection {
+  padding: 3rem 0;
+}
+
+/* Features Section */
+.featuresSection {
+  padding: 3rem 0;
+  background-color: #ffffff;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  color: #B13433;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.featureCard {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.featureCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Emergency Section */
+.emergencySection {
+  padding: 3rem 0;
+}
+
+/* Toolbar Section */
+.toolbarSection {
+  padding: 2rem 0 3rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .slideTitle {
+    font-size: 2rem;
+  }
+
+  .slideDescription {
+    font-size: 1rem;
+  }
+
+  .slideContainer {
+    height: 300px;
+  }
+
+  .heroSection {
+    padding: 1rem 0;
+  }
+
+  .statsSection,
+  .featuresSection,
+  .emergencySection {
+    padding: 2rem 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .slideTitle {
+    font-size: 1.5rem;
+  }
+
+  .slideDescription {
+    font-size: 0.9rem;
+  }
+
+  .slideContent {
+    padding: 1rem;
+  }
 }
 
 .statsGrid,
@@ -16,12 +167,7 @@
   align-items: center;
 }
 
-
 @media (min-width: 600px) {
-  .mainContent {
-    padding: 1.5rem;
-  }
-  
   .statsGrid,
   .toolbar {
     padding: 1.5rem;
@@ -29,10 +175,6 @@
 }
 
 @media (min-width: 900px) {
-  .mainContent {
-    padding: 2rem;
-  }
-  
   .statsGrid,
   .toolbar {
     padding: 2rem;
@@ -41,10 +183,6 @@
 }
 
 @media (min-width: 1200px) {
-  .mainContent {
-    padding: 2rem;
-  }
-  
   .statsGrid,
   .toolbar {
     padding: 2rem 3rem;
@@ -52,10 +190,6 @@
 }
 
 @media (min-width: 1600px) {
-  .mainContent {
-    padding: 3rem 4rem;
-  }
-  
   .statsGrid,
   .toolbar {
     max-width: 1600px;
@@ -64,10 +198,6 @@
 }
 
 @media (max-width: 400px) {
-  .mainContent {
-    padding: 0.75rem;
-  }
-  
   .statsGrid,
   .toolbar {
     padding: 0.75rem;

@@ -245,15 +245,12 @@ export const occurrenceService = {
 
   async getMapInfo(): Promise<IOccurrenceMapInfo[]> {
     const url = `${API_URL}/infomap`;
-    console.log('Buscando ocorrências do mapa em:', url);
     
     try {
       const response = await fetch(url, {
         method: 'GET',
         headers: getAuthHeaders(),
       });
-
-      console.log('Status da resposta:', response.status);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -262,9 +259,6 @@ export const occurrenceService = {
       }
 
       const data = await response.json();
-      console.log('Dados recebidos da API:', data);
-      console.log('Tipo de dados:', Array.isArray(data) ? 'Array' : typeof data);
-      console.log('Quantidade de itens:', Array.isArray(data) ? data.length : 'N/A');
       
       // Se a resposta for um objeto com propriedade items ou data
       if (data && !Array.isArray(data)) {

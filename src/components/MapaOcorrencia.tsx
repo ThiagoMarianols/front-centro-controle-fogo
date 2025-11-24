@@ -80,17 +80,17 @@ const HeatLayer = ({ points }: { points: [number, number, number][] }) => {
       const formattedPoints = points.map(p => [p[0], p[1], p[2] || 0.7] as [number, number, number]);
       
       const heatLayer = (L as any).heatLayer(formattedPoints, { 
-        radius: 25, 
-        blur: 15,
-        maxZoom: 17,
-        minOpacity: 0.2,
+        radius: 30, 
+        blur: 40,
+        maxZoom: 15,
+        minOpacity: 0.4,
         max: 1,
         gradient: {
-          0.4: 'blue',
-          0.6: 'cyan',
-          0.7: 'lime',
-          0.8: 'yellow',
-          1.0: 'red'
+          0.1: 'blue',
+          0.2: 'cyan',
+          0.3: 'lime',
+          0.4: 'yellow',
+          0.6: 'red'
         }
       });
       

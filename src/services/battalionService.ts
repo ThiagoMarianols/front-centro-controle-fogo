@@ -24,13 +24,13 @@ export const getBattalionsPaginated = async (
 };
 
 export const deactivateBattalion = async (id: number): Promise<void> => {
-  await axios.put(`${BASE_URL}/battalion/deactivate/${id}`, null, {
+  await axios.patch(`${BASE_URL}/battalion/deactivate/${id}`, null, {
     params: { id }
   });
 };
 
 export const activateBattalion = async (id: number): Promise<void> => {
-  await axios.put(`${BASE_URL}/battalion/activate/${id}`, null, {
+  await axios.patch(`${BASE_URL}/battalion/activate/${id}`, null, {
     params: { id }
   });
 };
@@ -47,5 +47,10 @@ export const createBattalion = async (data: BattalionRequest): Promise<Battalion
 
 export const updateBattalion = async (id: number, data: BattalionRequest): Promise<BattalionDTO> => {
   const response = await axios.put(`${BASE_URL}/battalion/${id}`, data);
+  return response.data;
+};
+
+export const getAllBattalions = async (): Promise<BattalionDTO[]> => {
+  const response = await axios.get(`${BASE_URL}/battalion/all`);
   return response.data;
 };

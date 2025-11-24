@@ -12,8 +12,15 @@ import {
   Radio,
   LoadingOverlay,
   MultiSelect,
-  Loader
+  Loader,
+  FileButton,
+  Image,
+  ActionIcon,
+  Text,
+  Stack,
+  Box
 } from '@mantine/core';
+import { IconUpload, IconX, IconEye, IconTrash } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import axios from '../config/axiosConfig';
 import type { IUpdateOccurrenceRequest } from '../interfaces/IOccurrence';
@@ -155,6 +162,13 @@ export default function EditarOcorrencia() {
     complemento: '',
     numero: ''
   });
+
+  // Estados para gerenciamento de fotos
+  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [modalOpened, setModalOpened] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
 
   // Carrega as naturezas disponíveis
   const loadNatures = async () => {
@@ -301,7 +315,6 @@ export default function EditarOcorrencia() {
       const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/occurrences/${id}`);
       const occurrence = response.data;
       
-      console.log('Dados da ocorrência recebidos:', occurrence);
       
       // Preenche os campos do formulário
       setNomeSolicitante(occurrence.occurrenceRequester || '');
@@ -351,6 +364,32 @@ export default function EditarOcorrencia() {
         setVehicleIds(occurrence.vehicles.map((v: any) => v.id?.toString()));
       }
       
+      // Preenche photoUrls - filtra apenas URLs válidas da Cloudinary
+      if (occurrence.photoUrls && occurrence.photoUrls.length > 0) {
+        const validUrls = occurrence.photoUrls.filter((url: string) => {
+          // Aceita URLs da Cloudinary ou URLs que não sejam de exemplo
+          const isCloudinary = url.includes('cloudinary.com');
+          const isExample = url.includes('example.com');
+          
+          if (isExample) {
+            console.warn('URL de exemplo detectada (será ignorada):', url);
+            return false;
+          }
+          
+          return true;
+        });
+        
+        setPhotoUrls(validUrls);
+        
+        if (validUrls.length < occurrence.photoUrls.length) {
+          notifications.show({
+            title: 'Aviso',
+            message: `${occurrence.photoUrls.length - validUrls.length} foto(s) com URL inválida foram ignoradas`,
+            color: 'yellow'
+          });
+        }
+      }
+      
     } catch (error) {
       console.error('Erro ao carregar ocorrência:', error);
       notifications.show({
@@ -360,6 +399,97 @@ export default function EditarOcorrencia() {
       });
       navigate('/ocorrencia');
     }
+  };
+
+  // Função para fazer upload de foto para Cloudinary
+  const handlePhotoUpload = async (file: File | null) => {
+    if (!file) return;
+
+    // Validação de tipo de arquivo
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      notifications.show({
+        title: 'Erro',
+        message: 'Formato de arquivo inválido. Use JPEG, PNG, GIF ou WebP.',
+        color: 'red'
+      });
+      return;
+    }
+
+    // Validação de tamanho (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      notifications.show({
+        title: 'Erro',
+        message: 'Arquivo muito grande. Tamanho máximo: 10MB',
+        color: 'red'
+      });
+      return;
+    }
+
+    try {
+      setUploadingPhoto(true);
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'CCF-Senac');
+      formData.append('cloud_name', 'db0uxnwoe');
+
+      const response = await fetch(
+        'https://api.cloudinary.com/v1_1/db0uxnwoe/image/upload',
+        {
+          method: 'POST',
+          body: formData
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Erro ao fazer upload da imagem');
+      }
+
+      const data = await response.json();
+      const imageUrl = data.secure_url;
+
+      setPhotoUrls(prev => [...prev, imageUrl]);
+      
+      notifications.show({
+        title: 'Sucesso',
+        message: 'Foto enviada com sucesso!',
+        color: 'green'
+      });
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+      notifications.show({
+        title: 'Erro',
+        message: 'Não foi possível fazer upload da foto',
+        color: 'red'
+      });
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  // Função para remover foto da lista
+  const handleRemovePhoto = (urlToRemove: string) => {
+    setPhotoUrls(prev => prev.filter(url => url !== urlToRemove));
+    notifications.show({
+      title: 'Sucesso',
+      message: 'Foto removida da lista',
+      color: 'green'
+    });
+  };
+
+  // Função para abrir modal de visualização
+  const handleViewPhoto = (url: string) => {
+    setImageLoading(true);
+    setSelectedPhoto(url);
+    setModalOpened(true);
+  };
+
+  // Função para fechar modal
+  const handleCloseModal = () => {
+    setModalOpened(false);
+    setSelectedPhoto(null);
+    setImageLoading(false);
   };
 
   // Carrega os dados iniciais
@@ -550,10 +680,9 @@ export default function EditarOcorrencia() {
         occurrenceArrivalTime: occurrenceArrivalTime 
           ? new Date(occurrenceArrivalTime).toISOString() 
           : new Date().toISOString(),
-        photoUrls: []
+        photoUrls: photoUrls
       };
 
-      console.log('Payload enviado:', JSON.stringify(updateData, null, 2));
 
       await axios.put(`${import.meta.env.VITE_BASE_URL}/occurrences/${id}`, updateData);
       
@@ -851,6 +980,131 @@ export default function EditarOcorrencia() {
             placeholder="Apartamento, bloco, etc."
           />
         </div>
+        
+        <div className={classes.formSection}>
+          <Title order={4} mb="md">Fotos da Ocorrência</Title>
+          
+          <Stack gap="md">
+            <FileButton
+              onChange={handlePhotoUpload}
+              accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
+            >
+              {(props) => (
+                <Button
+                  {...props}
+                  leftSection={<IconUpload size={16} />}
+                  loading={uploadingPhoto}
+                  disabled={uploadingPhoto}
+                  variant="light"
+                >
+                  {uploadingPhoto ? 'Enviando...' : 'Adicionar Foto'}
+                </Button>
+              )}
+            </FileButton>
+            
+            {photoUrls.length > 0 && (
+              <Box>
+                <Text size="sm" fw={500} mb="xs">
+                  Fotos ({photoUrls.length})
+                </Text>
+                <div className={classes.photoGrid}>
+                  {photoUrls.map((url, index) => (
+                    <Box
+                      key={index}
+                      className={classes.photoItem}
+                    >
+                      <Image
+                        src={url}
+                        alt={`Foto ${index + 1}`}
+                        fit="cover"
+                        className={classes.photoImage}
+                        onClick={() => handleViewPhoto(url)}
+                      />
+                      <div className={classes.photoActions}>
+                        <ActionIcon
+                          size="sm"
+                          variant="filled"
+                          color="blue"
+                          onClick={() => handleViewPhoto(url)}
+                          title="Visualizar"
+                        >
+                          <IconEye size={14} />
+                        </ActionIcon>
+                        <ActionIcon
+                          size="sm"
+                          variant="filled"
+                          color="red"
+                          onClick={() => handleRemovePhoto(url)}
+                          title="Remover"
+                        >
+                          <IconTrash size={14} />
+                        </ActionIcon>
+                      </div>
+                    </Box>
+                  ))}
+                </div>
+              </Box>
+            )}
+            
+            {photoUrls.length === 0 && (
+              <Text size="sm" c="dimmed">
+                Nenhuma foto adicionada ainda.
+              </Text>
+            )}
+          </Stack>
+        </div>
+        
+        {modalOpened && selectedPhoto && (
+          <div
+            className={classes.modalOverlay}
+            onClick={handleCloseModal}
+          >
+            <div
+              className={classes.modalContent}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={classes.modalHeader}>
+                <h3 className={classes.modalTitle}>Visualização da Foto</h3>
+                <button
+                  onClick={handleCloseModal}
+                  className={classes.modalCloseButton}
+                >
+                  <IconX size={20} />
+                </button>
+              </div>
+              
+              <div className={classes.modalImageContainer}>
+                {imageLoading && (
+                  <div className={classes.modalLoader}>
+                    <Loader size="lg" />
+                    <p className={classes.modalLoaderText}>Carregando imagem...</p>
+                  </div>
+                )}
+                <img
+                  src={selectedPhoto}
+                  alt="Visualização da foto"
+                  className={classes.modalImage}
+                  style={{
+                    opacity: imageLoading ? 0 : 1
+                  }}
+                  onError={(e) => {
+                    console.error('❌ Erro ao carregar imagem:', selectedPhoto);
+                    setImageLoading(false);
+                    notifications.show({
+                      title: 'Erro',
+                      message: 'Não foi possível carregar a imagem',
+                      color: 'red'
+                    });
+                  }}
+                  onLoad={(e) => {
+                    const img = e.currentTarget;
+                    setImageLoading(false);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
         
         <Group justify="flex-end" mt="xl">
           <Button 

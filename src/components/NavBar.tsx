@@ -27,6 +27,7 @@ const mockdata = [
     initiallyOpened: true,
     links: [
       { label: 'Batalhão', link: '/administracao/Batalhao' },
+      { label: 'Veículos', link: '/administracao/Veiculo' },
       { label: 'Usuários', link: '/administracao/Users' },
     ],
   },

@@ -391,8 +391,8 @@ export function EditarUsuario() {
               searchable
             />
             <MultiSelect
-              label="Funções"
-              placeholder="Selecione as funções"
+              label="Perfil"
+              placeholder="Selecione o perfil"
               value={roleIds}
               onChange={setRoleIds}
               data={roles.map(r => ({ value: r.id.toString(), label: r.name }))}

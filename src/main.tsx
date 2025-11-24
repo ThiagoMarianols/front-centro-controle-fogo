@@ -25,6 +25,9 @@ import { RegistroOcorrencia } from './pages/RegistroOcorrencia.tsx'
 import EditarOcorrencia from './pages/EditarOcorrencia.tsx'
 import { RegistroBatalhao } from './pages/administracao/RegistroBatalhao.tsx'
 import EditarBatalhao from './pages/administracao/EditarBatalhao.tsx'
+import Veiculo from './pages/administracao/Veiculo.tsx'
+import { RegistroVeiculo } from './pages/administracao/RegistroVeiculo.tsx'
+import EditarVeiculo from './pages/administracao/EditarVeiculo.tsx'
 import { CadastroOcorrenciaSecun } from './pages/CadastroOcorrenciaSecun.tsx'
 import { DetalhesOcorrencia } from './pages/DetalhesOcorrencia.tsx'
 import { CompletarOcorrencia } from './pages/CompletarOcorrencia.tsx'
@@ -49,6 +52,9 @@ const router = createBrowserRouter([
       { path: 'EditarOcorrencia/:id', element: <ProtectedRoute><EditarOcorrencia /></ProtectedRoute> },
       { path: 'administracao/RegistroBatalhao', element: <ProtectedRoute><RegistroBatalhao /></ProtectedRoute> },
       { path: 'administracao/EditarBatalhao/:id', element: <ProtectedRoute><EditarBatalhao /></ProtectedRoute> },
+      { path: 'administracao/Veiculo', element: <ProtectedRoute><Veiculo /></ProtectedRoute> },
+      { path: 'administracao/RegistroVeiculo', element: <ProtectedRoute><RegistroVeiculo /></ProtectedRoute> },
+      { path: 'administracao/EditarVeiculo/:id', element: <ProtectedRoute><EditarVeiculo /></ProtectedRoute> },
       { path: 'administracao/CadastroOcorrenciaSecun', element: <ProtectedRoute><CadastroOcorrenciaSecun /></ProtectedRoute> },
     ],
   },

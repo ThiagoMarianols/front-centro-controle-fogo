@@ -30,11 +30,11 @@ export const getUsersPaginated = async (
 };
 
 export const deactivateUser = async (id: number): Promise<void> => {
-  await axios.put(`${BASE_URL}/auth/deactivate/${id}`);
+  await axios.patch(`${BASE_URL}/auth/deactivate/${id}`);
 };
 
 export const activateUser = async (id: number): Promise<void> => {
-  await axios.put(`${BASE_URL}/auth/activate/${id}`);
+  await axios.patch(`${BASE_URL}/auth/activate/${id}`);
 };
 
 export const getUserById = async (id: number): Promise<UserResponseDTO> => {

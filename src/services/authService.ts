@@ -68,12 +68,12 @@ export async function getUsersPaginated(
 }
 
 export async function deactivateUser(id: number): Promise<string> {
-  const response = await axios.put(`${API_URL}/auth/deactivate/${id}`);
+  const response = await axios.patch(`${API_URL}/auth/deactivate/${id}`);
   return response.data;
 }
 
 export async function activateUser(id: number): Promise<string> {
-  const response = await axios.put(`${API_URL}/auth/activate/${id}`);
+  const response = await axios.patch(`${API_URL}/auth/activate/${id}`);
   return response.data;
 }
 
