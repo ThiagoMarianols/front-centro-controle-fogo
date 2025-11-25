@@ -51,6 +51,31 @@ const getIconByNature = (natureName: string) => {
   return L.icon({ iconUrl: pin, iconSize: [50, 50] });
 };
 
+const hasValidCoordinates = (occurrence: IOccurrenceMapInfo) =>
+  typeof occurrence.latitude === 'number' && !Number.isNaN(occurrence.latitude) &&
+  typeof occurrence.longitude === 'number' && !Number.isNaN(occurrence.longitude);
+
+const isAwaitingStatus = (statusName?: string) =>
+  statusName?.toUpperCase().includes('AGUARDANDO') ?? false;
+
+const filterOccurrencesForMap = (items: IOccurrenceMapInfo[]) =>
+  items.filter((occurrence) => {
+    if (hasValidCoordinates(occurrence)) {
+      return true;
+    }
+
+    if (isAwaitingStatus(occurrence.statusName)) {
+      console.warn('Ignorando ocorrência sem coordenadas por estar aguardando atendimento:', occurrence.id);
+      return false;
+    }
+
+    if (occurrence.latitude === null || occurrence.longitude === null) {
+      console.warn('Ocorrência sem coordenadas não será exibida no mapa:', occurrence.id);
+    }
+
+    return false;
+  });
+
 
 interface OccurrencesMapContentProps {
   occurrences: IOccurrenceMapInfo[];
@@ -175,7 +200,7 @@ export default function MapOccurrences({ filteredOccurrences }: MapOccurrencesPr
   useEffect(() => {
     // Se receber ocorrências filtradas, usa elas
     if (filteredOccurrences !== undefined) {
-      setOccurrences(filteredOccurrences);
+      setOccurrences(filterOccurrencesForMap(filteredOccurrences));
       setLoading(false);
       return;
     }
@@ -187,7 +212,7 @@ export default function MapOccurrences({ filteredOccurrences }: MapOccurrencesPr
         const data = await occurrenceService.getMapInfo();
         console.log('Dados recebidos do mapa:', data);
         console.log('Total de ocorrências:', data?.length || 0);
-        setOccurrences(data);
+        setOccurrences(filterOccurrencesForMap(data));
       } catch (error) {
         console.error('Erro ao carregar ocorrências do mapa:', error);
         notifications.show({

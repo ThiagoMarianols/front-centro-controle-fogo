@@ -48,7 +48,12 @@ export function ReadItems({ paramsReaderItems }: { paramsReaderItems: ParamsRead
   const [activePage, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ativos');
-  const [sortConfig, setSortConfig] = useState<{ columnIndex: number | null; direction: 'asc' | 'desc' }>({ columnIndex: null, direction: 'asc' });
+  const idColumnIndex = paramsReaderItems.headers.findIndex((header) => header.toLowerCase().includes('id'));
+  const [sortConfig, setSortConfig] = useState<{ columnIndex: number | null; direction: 'asc' | 'desc' }>(() => ({
+    columnIndex: idColumnIndex !== -1 ? idColumnIndex : null,
+    direction: 'asc'
+  }));
+
   const itemsPerPage = 10;
   const url = paramsReaderItems.url;
 

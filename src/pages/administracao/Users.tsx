@@ -4,12 +4,13 @@ import { ReadItems } from '../../components/ReadItems';
 import { getUsersPaginated, deactivateUser, activateUser } from '../../services/authService';
 import type { PaginatorGeneric, UserPaginatorDTO } from '../../interface/Paginator';
 import { Loader, Center } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
+import { useErrorHandler } from '../../error-handling';
 
 const Users = () => {
   const navigate = useNavigate();
   const [users, setUsers] = useState<UserPaginatorDTO[]>([]);
   const [loading, setLoading] = useState(true);
+  const errorHandler = useErrorHandler('user');
 
   const fetchUsers = async () => {
     try {
@@ -20,11 +21,7 @@ const Users = () => {
       ]);
       setUsers([...activeUsers.items, ...inactiveUsers.items]);
     } catch (err) {
-      notifications.show({
-        title: 'Erro',
-        message: err instanceof Error ? err.message : 'Erro ao carregar usuários',
-        color: 'red',
-      });
+      await errorHandler.handleListError(err);
     } finally {
       setLoading(false);
     }
@@ -66,18 +63,10 @@ const Users = () => {
     try {
       const id = Number(row[0]);
       await deactivateUser(id);
-      notifications.show({
-        title: 'Sucesso',
-        message: 'Usuário desativado com sucesso',
-        color: 'green',
-      });
+      errorHandler.showDeactivateSuccess();
       await fetchUsers();
     } catch (error) {
-      notifications.show({
-        title: 'Erro',
-        message: 'Erro ao desativar usuário',
-        color: 'red',
-      });
+      await errorHandler.handleDeactivateError(error);
     }
   };
 
@@ -85,18 +74,10 @@ const Users = () => {
     try {
       const id = Number(row[0]);
       await activateUser(id);
-      notifications.show({
-        title: 'Sucesso',
-        message: 'Usuário ativado com sucesso',
-        color: 'green',
-      });
+      errorHandler.showActivateSuccess();
       await fetchUsers();
     } catch (error) {
-      notifications.show({
-        title: 'Erro',
-        message: 'Erro ao ativar usuário',
-        color: 'red',
-      });
+      await errorHandler.handleActivateError(error);
     }
   };
 

@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { notifications } from '@mantine/notifications';
 import { BattalionForm, type BattalionFormValues } from '../../components/battalion/BattalionForm';
 import { getBattalionById, updateBattalion } from '../../services/battalionService';
 import type { BattalionDTO } from '../../interfaces/IBattalion';
 import { extractBattalionAddress } from '../../utils/battalionAddress';
+import { useErrorHandler, notificationService } from '../../error-handling';
 
 const mapBattalionToFormValues = (battalion: BattalionDTO): BattalionFormValues => {
   const toStringSafe = (value: string | number | undefined | null) => {
@@ -54,6 +54,7 @@ const mapBattalionToFormValues = (battalion: BattalionDTO): BattalionFormValues 
 export default function EditarBatalhao() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const errorHandler = useErrorHandler('battalion');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [initialValues, setInitialValues] = useState<BattalionFormValues | undefined>(undefined);
@@ -61,11 +62,7 @@ export default function EditarBatalhao() {
   useEffect(() => {
     const loadBattalion = async () => {
       if (!id) {
-        notifications.show({
-          title: 'Erro',
-          message: 'ID do batalhão não informado',
-          color: 'red'
-        });
+        notificationService.showError('Erro', 'ID do batalhão não informado');
         navigate('/administracao/Batalhao');
         return;
       }
@@ -76,11 +73,7 @@ export default function EditarBatalhao() {
         setInitialValues(mapBattalionToFormValues(battalion));
       } catch (error: any) {
         console.error('Erro ao carregar batalhão:', error);
-        notifications.show({
-          title: 'Erro',
-          message: error.response?.data?.message || 'Não foi possível carregar o batalhão',
-          color: 'red'
-        });
+        await errorHandler.handleReadError(error);
         navigate('/administracao/Batalhao');
       } finally {
         setLoading(false);
@@ -110,20 +103,11 @@ export default function EditarBatalhao() {
         }
       });
 
-      notifications.show({
-        title: 'Sucesso',
-        message: 'Batalhão atualizado com sucesso',
-        color: 'green'
-      });
-
+      errorHandler.showUpdateSuccess();
       navigate('/administracao/Batalhao');
     } catch (error: any) {
       console.error('Erro ao atualizar batalhão:', error);
-      notifications.show({
-        title: 'Erro',
-        message: error.response?.data?.message || 'Não foi possível atualizar o batalhão',
-        color: 'red'
-      });
+      await errorHandler.handleUpdateError(error);
     } finally {
       setSubmitting(false);
     }

@@ -199,9 +199,9 @@ const Home = () => {
                     <IconAlertTriangle size={32} />
                   </ThemeIcon>
                   <div>
-                    <Title order={2} mb="xs">Emergência?</Title>
+                    <Title order={2} mb="xs">Precisando de ajuda com o app?</Title>
                     <Text size="lg">
-                      Em caso de emergência, ligue imediatamente para o Corpo de Bombeiros
+                      Entre em contato conosco pelo nosso e-mail para que possamos ajudá-lo da melhor forma possível.
                     </Text>
                   </div>
                 </Group>
@@ -215,7 +215,7 @@ const Home = () => {
                   fullWidth
                   style={{ fontWeight: 700, fontSize: '1.5rem' }}
                 >
-                  193
+                  suporte@ccf.com.br
                 </Button>
               </Grid.Col>
             </Grid>

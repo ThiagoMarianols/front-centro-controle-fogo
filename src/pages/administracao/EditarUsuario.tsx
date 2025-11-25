@@ -12,6 +12,7 @@ import {
   Group
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
+import { useErrorHandler, notificationService } from '../../error-handling';
 import { getUserById, updateUser } from '../../services/authService';
 import { getAllPatents } from '../../services/patentService';
 import { getBattalionsPaginated } from '../../services/battalionService';
@@ -21,15 +22,144 @@ import type { PatentDTO } from '../../interfaces/IPatent';
 import type { BattalionDTO } from '../../interfaces/IBattalion';
 import type { RoleDTO } from '../../interfaces/IRole';
 
+type AddressFieldKey = 'zipCode' | 'street' | 'number' | 'neighborhood' | 'city' | 'state' | 'complement';
+type AddressFields = Partial<Record<AddressFieldKey, string | number>>;
+
+const ADDRESS_ALIASES: Record<AddressFieldKey, string[]> = {
+  zipCode: ['zipCode', 'cep', 'postalCode'],
+  street: ['street', 'logradouro', 'addressLine'],
+  number: ['number', 'numero'],
+  neighborhood: ['neighborhood', 'bairro'],
+  city: ['city', 'cidade', 'cityName'],
+  state: ['state', 'estado', 'uf'],
+  complement: ['complement', 'complemento']
+};
+
+const hasAddressField = (candidate: Record<string, unknown>) =>
+  Object.values(ADDRESS_ALIASES).some((aliases) =>
+    aliases.some((alias) => alias in candidate && candidate[alias] !== undefined && candidate[alias] !== null)
+  );
+
+const normalizeAddressFields = (candidate: Record<string, unknown>): AddressFields => {
+  const normalized: AddressFields = {};
+
+  (Object.keys(ADDRESS_ALIASES) as AddressFieldKey[]).forEach((key) => {
+    const aliases = ADDRESS_ALIASES[key];
+    for (const alias of aliases) {
+      if (alias in candidate && candidate[alias] !== undefined && candidate[alias] !== null) {
+        normalized[key] = candidate[alias] as string | number;
+        break;
+      }
+    }
+  });
+
+  return normalized;
+};
+
+const extractUserAddress = (candidate: unknown, visited = new WeakSet<object>()): AddressFields | undefined => {
+  if (!candidate || typeof candidate !== 'object') {
+    return undefined;
+  }
+
+  const node = candidate as Record<string, unknown>;
+
+  if (visited.has(node)) {
+    return undefined;
+  }
+  visited.add(node);
+
+  if (hasAddressField(node)) {
+    return normalizeAddressFields(node);
+  }
+
+  for (const value of Object.values(node)) {
+    if (value && typeof value === 'object') {
+      const resolved = extractUserAddress(value, visited);
+      if (resolved) {
+        return resolved;
+      }
+    }
+  }
+
+  return undefined;
+};
+
+const STATE_OPTIONS = [
+  'Acre (AC)',
+  'Alagoas (AL)',
+  'Amapá (AP)',
+  'Amazonas (AM)',
+  'Bahia (BA)',
+  'Ceará (CE)',
+  'Distrito Federal (DF)',
+  'Espírito Santo (ES)',
+  'Goiás (GO)',
+  'Maranhão (MA)',
+  'Mato Grosso (MT)',
+  'Mato Grosso do Sul (MS)',
+  'Minas Gerais (MG)',
+  'Pará (PA)',
+  'Paraíba (PB)',
+  'Paraná (PR)',
+  'Pernambuco (PE)',
+  'Piauí (PI)',
+  'Rio de Janeiro (RJ)',
+  'Rio Grande do Norte (RN)',
+  'Rio Grande do Sul (RS)',
+  'Rondônia (RO)',
+  'Roraima (RR)',
+  'Santa Catarina (SC)',
+  'São Paulo (SP)',
+  'Sergipe (SE)',
+  'Tocantins (TO)'
+];
+
+const findStateLabelByUF = (uf: string): string | undefined => {
+  if (!uf) return undefined;
+  const upperUf = uf.toUpperCase();
+  return STATE_OPTIONS.find((option) => option.includes(`(${upperUf})`));
+};
+
+const extractUfFromStateLabel = (label?: string | null) => {
+  if (!label) return '';
+  const match = label.match(/\(([^)]+)\)/);
+  return match ? match[1] : label;
+};
+
+const formatPhone = (value: string) => {
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  if (digits.length === 0) return '';
+  if (digits.length <= 2) return `(${digits}`;
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+};
+
+const formatCPF = (value: string) => {
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+  if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+};
+
+const formatCep = (value: string) => {
+  const digits = value.replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 5) return digits;
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+};
+
 export function EditarUsuario() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const errorHandler = useErrorHandler('user');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [cep, setCep] = useState('');
 
   // Form fields
   const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [cpf, setCpf] = useState('');
@@ -62,22 +192,30 @@ export function EditarUsuario() {
 
       try {
         setLoading(true);
-        const userData = await getUserById(Number(id));
+        const [patentsData, battalionsResponse, rolesData, userData] = await Promise.all([
+          getAllPatents(),
+          getBattalionsPaginated(1, 100, undefined, true),
+          getAllRoles(),
+          getUserById(Number(id))
+        ]);
 
-        // Set form values
+        const activePatents = patentsData.filter((patentItem) => patentItem.active);
+        const battalionItems = battalionsResponse.items;
+        const activeRoles = rolesData.filter((role) => role.active);
+
+        setPatents(activePatents);
+        setBattalions(battalionItems);
+        setRoles(activeRoles);
+
         setUsername(userData.username || '');
         setEmail(userData.email || '');
 
-        const phoneNumberSanitized = (userData.phoneNumber || '').replace(/\D/g, '');
-        setPhoneNumber(phoneNumberSanitized);
-
-        const cpfSanitized = (userData.cpf || '').replace(/\D/g, '');
-        setCpf(cpfSanitized);
-
+        setPhoneNumber((userData.phoneNumber || '').replace(/\D/g, ''));
+        setCpf((userData.cpf || '').replace(/\D/g, ''));
         setMatriculates(userData.matriculates || '');
-        setName(userData.normalizedName || '');
+        setName(userData.name || userData.normalizedName || '');
         setGender(userData.gender || null);
-        
+
         if (userData.dateBirth) {
           const date = new Date(userData.dateBirth);
           const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
@@ -86,62 +224,80 @@ export function EditarUsuario() {
           setDateBirth(localDate);
         }
 
-        if (userData.patent?.id) {
-          setPatent(userData.patent.id.toString());
-        }
+        const resolvedPatentId =
+          userData.patent?.id ??
+          activePatents.find((item) => item.name?.toLowerCase() === (userData.patent?.name || '').toLowerCase())?.id;
+        setPatent(resolvedPatentId ? resolvedPatentId.toString() : null);
 
-        if (userData.battalion?.id) {
-          setBattalion(userData.battalion.id.toString());
-        }
+        const resolvedBattalionId =
+          userData.battalion?.id ??
+          battalionItems.find((item) => item.name?.toLowerCase() === (userData.battalion?.name || '').toLowerCase())?.id;
+        setBattalion(resolvedBattalionId ? resolvedBattalionId.toString() : null);
 
         if (userData.userRoles && userData.userRoles.length > 0) {
           const parsedRoles = userData.userRoles
-            .map(ur => ur.role?.id)
+            .map((userRole) => {
+              if (userRole.role?.id) {
+                return userRole.role.id;
+              }
+              const fallback = activeRoles.find(
+                (role) => role.name?.toLowerCase() === (userRole.role?.name || '').toLowerCase()
+              );
+              return fallback?.id;
+            })
             .filter((roleId): roleId is number => typeof roleId === 'number')
-            .map(roleId => roleId.toString());
+            .map((roleId) => roleId.toString());
           setRoleIds(parsedRoles);
+        } else {
+          setRoleIds([]);
         }
 
-        if (userData.address) {
+        const resolvedAddress = extractUserAddress(userData as UserDetailDTO & Record<string, unknown>);
+
+        if (resolvedAddress) {
+          const zipValue = resolvedAddress.zipCode ? resolvedAddress.zipCode.toString() : '';
+          const resolvedStateValue = (resolvedAddress.state ?? '') as string;
+          const stateLabel = findStateLabelByUF(resolvedStateValue);
+          setCep(zipValue.replace(/\D/g, ''));
+          setEndereco({
+            logradouro: (resolvedAddress.street ?? '') as string,
+            numero: String(resolvedAddress.number ?? ''),
+            bairro: (resolvedAddress.neighborhood ?? '') as string,
+            cidade: (resolvedAddress.city ?? '') as string,
+            estado: stateLabel ?? resolvedStateValue ?? '',
+            complemento: (resolvedAddress.complement ?? '') as string
+          });
+        } else if (userData.address) {
           setCep((userData.address.zipCode || '').replace(/\D/g, ''));
           setEndereco({
             logradouro: userData.address.street || '',
             numero: userData.address.number?.toString() || '',
             bairro: userData.address.neighborhood || '',
             cidade: userData.address.city || '',
-            estado: userData.address.state || '',
+            estado: (findStateLabelByUF(userData.address.state || '') ?? (userData.address.state || '')),
             complemento: userData.address.complement || ''
           });
-        }
-
-        try {
-          const [patentsData, battalionsData, rolesData] = await Promise.all([
-            getAllPatents(),
-            getBattalionsPaginated(1, 100, undefined, true),
-            getAllRoles()
-          ]);
-          setPatents(patentsData);
-          setBattalions(battalionsData.items);
-          setRoles(rolesData);
-        } catch (optionsError) {
-          notifications.show({
-            title: 'Aviso',
-            message: 'Não foi possível carregar todas as opções. Verifique sua conexão e tente novamente.',
-            color: 'yellow'
+        } else {
+          setEndereco({
+            logradouro: '',
+            numero: '',
+            bairro: '',
+            cidade: '',
+            estado: '',
+            complemento: ''
           });
         }
       } catch (error) {
-        notifications.show({
-          title: 'Erro',
-          message: 'Erro ao carregar dados do usuário',
-          color: 'red'
-        });
+        await errorHandler.handleReadError(error, 'Erro ao carregar dados do usuário');
       } finally {
         setLoading(false);
       }
     };
 
     loadData();
+    // errorHandler é estável para este ciclo específico e não precisa entrar nas dependências,
+    // evitando reexecuções infinitas que mantinham o overlay carregando.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   async function buscarCep(valor: string) {
@@ -153,7 +309,11 @@ export function EditarUsuario() {
       const data = await res.json();
 
       if (data.erro) {
-        console.warn('CEP não encontrado');
+        notifications.show({
+          title: 'CEP não encontrado',
+          message: 'Verifique o CEP informado e tente novamente.',
+          color: 'yellow'
+        });
         return;
       }
 
@@ -162,29 +322,17 @@ export function EditarUsuario() {
         logradouro: data.logradouro || '',
         bairro: data.bairro || '',
         cidade: data.localidade || '',
-        estado: data.uf || '',
+        estado: (findStateLabelByUF(data.uf || '') ?? (data.uf || prev.estado)),
         complemento: data.complemento || ''
       }));
     } catch (error) {
       console.error('Erro ao buscar o CEP:', error);
+      notifications.show({
+        title: 'Erro',
+        message: 'Não foi possível buscar o CEP informado.',
+        color: 'red'
+      });
     }
-  }
-
-  function formatPhone(value: string) {
-    const digits = value.replace(/\D/g, '').slice(0, 11);
-    if (digits.length === 0) return '';
-    if (digits.length <= 2) return `(${digits}`;
-    if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-    if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
-    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-  }
-
-  function formatCPF(value: string) {
-    const digits = value.replace(/\D/g, '').slice(0, 11);
-    if (digits.length <= 3) return digits;
-    if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
-    if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
-    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -194,47 +342,27 @@ export function EditarUsuario() {
 
     // Validations
     if (!username || !email || !phoneNumber || !cpf || !matriculates || !name || !dateBirth || !gender || !battalion || !patent) {
-      notifications.show({
-        title: 'Erro',
-        message: 'Preencha todos os campos obrigatórios',
-        color: 'red'
-      });
+      notificationService.showValidationError('Preencha todos os campos obrigatórios');
       return;
     }
 
     if (phoneNumber.length < 10 || phoneNumber.length > 11) {
-      notifications.show({
-        title: 'Telefone inválido',
-        message: 'Informe um telefone com DDD (10 ou 11 dígitos)',
-        color: 'red'
-      });
+      notificationService.showValidationError('Informe um telefone com DDD (10 ou 11 dígitos)');
       return;
     }
 
     if (cpf.length !== 11) {
-      notifications.show({
-        title: 'CPF inválido',
-        message: 'Informe um CPF válido com 11 dígitos',
-        color: 'red'
-      });
+      notificationService.showValidationError('Informe um CPF válido com 11 dígitos');
       return;
     }
 
-    if (!endereco.logradouro || !endereco.numero || !endereco.bairro || !endereco.cidade || !endereco.estado) {
-      notifications.show({
-        title: 'Erro',
-        message: 'Preencha todos os campos de endereço',
-        color: 'red'
-      });
+    if (!cep || !endereco.logradouro || !endereco.numero || !endereco.bairro || !endereco.cidade || !endereco.estado) {
+      notificationService.showValidationError('Preencha todos os campos de endereço');
       return;
     }
 
     if (roleIds.length === 0) {
-      notifications.show({
-        title: 'Erro',
-        message: 'Selecione pelo menos uma função',
-        color: 'red'
-      });
+      notificationService.showValidationError('Selecione pelo menos uma função');
       return;
     }
 
@@ -257,35 +385,31 @@ export function EditarUsuario() {
           complement: endereco.complemento,
           neighborhood: endereco.bairro,
           city: endereco.cidade,
-          state: endereco.estado,
+          state: extractUfFromStateLabel(endereco.estado) || endereco.estado,
           zipCode: cep.replace(/\D/g, '')
         },
         patent: Number(patent),
         roleIds: roleIds.map(id => Number(id))
       };
 
+      // Only include password if it was provided
+      if (password.trim()) {
+        payload.password = password;
+      }
+
       await updateUser(Number(id), payload);
 
-      notifications.show({
-        title: 'Sucesso',
-        message: 'Usuário atualizado com sucesso',
-        color: 'green'
-      });
-
+      errorHandler.showUpdateSuccess();
       navigate('/administracao/Users');
     } catch (error) {
-      notifications.show({
-        title: 'Erro',
-        message: error instanceof Error ? error.message : 'Erro ao atualizar usuário',
-        color: 'red'
-      });
+      await errorHandler.handleUpdateError(error);
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <div className={classes.centerWrap}>
+    <form className={classes.centerWrap} onSubmit={handleSubmit}>
       <LoadingOverlay visible={loading} />
 
       <Title order={2} className={classes.title}>Editar Usuário</Title>
@@ -309,6 +433,14 @@ export function EditarUsuario() {
               onChange={(e) => setEmail(e.target.value)}
               required
               type="email"
+            />
+            <TextInput
+              label="Nova Senha (opcional)"
+              placeholder="Deixe em branco para manter a senha atual"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              type="password"
+              description="Preencha apenas se desejar alterar a senha"
             />
           </div>
         </Paper>
@@ -408,17 +540,17 @@ export function EditarUsuario() {
           <div className={classes.formGrid}>
             <TextInput
               label="CEP"
-              placeholder="CEP"
-              value={cep}
+              placeholder="00000-000"
+              value={formatCep(cep)}
               onChange={(e) => {
-                const valor = e.target.value;
-                setCep(valor);
-                const limpo = valor.replace(/\D/g, '');
-                if (limpo.length === 8) {
-                  buscarCep(limpo);
+                const digits = e.target.value.replace(/\D/g, '').slice(0, 8);
+                setCep(digits);
+                if (digits.length === 8) {
+                  buscarCep(digits);
                 }
               }}
               maxLength={9}
+              required
             />
             <TextInput
               label="Logradouro"
@@ -444,12 +576,14 @@ export function EditarUsuario() {
               value={endereco.cidade}
               onChange={(e) => setEndereco({ ...endereco, cidade: e.target.value })}
             />
-            <TextInput
+            <Select
               label="Estado"
-              placeholder="UF"
-              value={endereco.estado}
-              onChange={(e) => setEndereco({ ...endereco, estado: e.target.value.toUpperCase() })}
-              maxLength={2}
+              placeholder="Selecione o estado"
+              data={STATE_OPTIONS}
+              value={endereco.estado || null}
+              onChange={(value) => setEndereco({ ...endereco, estado: value || '' })}
+              searchable
+              nothingFoundMessage="Nenhum estado"
             />
             <TextInput
               label="Complemento"
@@ -463,6 +597,7 @@ export function EditarUsuario() {
 
       <Group justify="center" mt="xl">
         <Button 
+          type="button"
           variant="outline" 
           onClick={() => navigate('/administracao/Users')}
           disabled={submitting}
@@ -470,14 +605,14 @@ export function EditarUsuario() {
           Cancelar
         </Button>
         <Button 
-          onClick={handleSubmit}
+          type="submit"
           loading={submitting}
           disabled={submitting}
         >
           Salvar Alterações
         </Button>
       </Group>
-    </div>
+    </form>
   );
 }
 

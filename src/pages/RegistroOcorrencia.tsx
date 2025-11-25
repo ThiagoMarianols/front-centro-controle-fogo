@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
 import { useNavigate } from 'react-router-dom';
 import classes from '../styles/RegistroOcorrencia.module.css';
 import {  
@@ -8,20 +9,33 @@ import {
   Title,
   Button,
   Group,
-  Radio
+  Radio,
+  Loader
 } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
+
 import { occurrenceService } from '../services/occurrenceService';
-import type { IOccurrenceRequest } from '../interfaces/IOccurrence';
+import type { IOccurrenceRequest, IOccurrenceNature, IOccurrenceType, IOccurrenceSubtype } from '../interfaces/IOccurrence';
+
+import { useErrorHandler, notificationService } from '../error-handling';
 
 export function RegistroOcorrencia() {
   const navigate = useNavigate();
+  const errorHandler = useErrorHandler('occurrence');
+  const { handleReadError } = errorHandler;
   const [cep, setCep] = useState('');
   const [temVitimas, setTemVitimas] = useState<string | null>(null);
   const [nomeSolicitante, setNomeSolicitante] = useState('');
   const [telefoneSolicitante, setTelefoneSolicitante] = useState('');
-  const [tipoOcorrencia, setTipoOcorrencia] = useState<string | null>(null);
+  const [naturezaId, setNaturezaId] = useState<string | null>(null);
+  const [tipoId, setTipoId] = useState<string | null>(null);
+  const [subtipoId, setSubtipoId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [naturezaLoading, setNaturezaLoading] = useState(false);
+  const [tipoLoading, setTipoLoading] = useState(false);
+  const [subtipoLoading, setSubtipoLoading] = useState(false);
+  const [naturezaOptions, setNaturezaOptions] = useState<{ value: string; label: string }[]>([]);
+  const [tipoOptions, setTipoOptions] = useState<{ value: string; label: string }[]>([]);
+  const [subtipoOptions, setSubtipoOptions] = useState<{ value: string; label: string }[]>([]);
   const [endereco, setEndereco] = useState({
     logradouro: '',
     bairro: '',
@@ -30,6 +44,79 @@ export function RegistroOcorrencia() {
     complemento: '',
     numero: ''
   });
+
+  const loadNatures = async () => {
+    try {
+      setNaturezaLoading(true);
+      const natures = await occurrenceService.getNatures();
+      setNaturezaOptions(natures.map((nature: IOccurrenceNature) => ({
+        value: nature.id.toString(),
+        label: nature.name
+      })));
+    } catch (error) {
+      await handleReadError(error, 'Erro ao carregar naturezas da ocorrência');
+    } finally {
+      setNaturezaLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadNatures();
+  }, [handleReadError]);
+
+  useEffect(() => {
+    setTipoId(null);
+    setTipoOptions([]);
+    setSubtipoId(null);
+    setSubtipoOptions([]);
+
+    if (!naturezaId) {
+      return;
+    }
+
+    const fetchTypes = async () => {
+      try {
+        setTipoLoading(true);
+        const types = await occurrenceService.getTypesByNature(Number(naturezaId));
+        setTipoOptions(types.map((type: IOccurrenceType) => ({
+          value: type.id.toString(),
+          label: type.name
+        })));
+      } catch (error) {
+        await handleReadError(error, 'Erro ao carregar tipos para a natureza selecionada');
+      } finally {
+        setTipoLoading(false);
+      }
+    };
+
+    fetchTypes();
+  }, [naturezaId, handleReadError]);
+
+  useEffect(() => {
+    setSubtipoId(null);
+    setSubtipoOptions([]);
+
+    if (!tipoId) {
+      return;
+    }
+
+    const fetchSubtypes = async () => {
+      try {
+        setSubtipoLoading(true);
+        const subtypes = await occurrenceService.getSubtypesByType(Number(tipoId));
+        setSubtipoOptions(subtypes.map((subtype: IOccurrenceSubtype) => ({
+          value: subtype.id.toString(),
+          label: subtype.name
+        })));
+      } catch (error) {
+        await handleReadError(error, 'Erro ao carregar subtipos para o tipo selecionado');
+      } finally {
+        setSubtipoLoading(false);
+      }
+    };
+
+    fetchSubtypes();
+  }, [tipoId, handleReadError]);
 
   // Função que consulta o ViaCEP
   async function buscarCep(valor: string) {
@@ -73,31 +160,19 @@ export function RegistroOcorrencia() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!nomeSolicitante || !telefoneSolicitante || !tipoOcorrencia || temVitimas === null) {
-      notifications.show({
-        title: 'Erro',
-        message: 'Preencha todos os campos obrigatórios',
-        color: 'red'
-      });
+    if (!nomeSolicitante || !telefoneSolicitante || temVitimas === null || !naturezaId || !tipoId || !subtipoId) {
+      notificationService.showValidationError('Preencha todos os campos obrigatórios');
       return;
     }
 
     // telefone deve ter 10 (fixo) ou 11 (celular) dígitos
     if (!(telefoneSolicitante.length === 10 || telefoneSolicitante.length === 11)) {
-      notifications.show({
-        title: 'Telefone inválido',
-        message: 'Informe um telefone com DDD (10 ou 11 dígitos). Ex: (81) 98765-8765',
-        color: 'red'
-      });
+      notificationService.showValidationError('Informe um telefone com DDD (10 ou 11 dígitos). Ex: (81) 98765-8765');
       return;
     }
 
     if (!endereco.logradouro || !endereco.numero || !endereco.bairro || !endereco.cidade || !endereco.estado) {
-      notifications.show({
-        title: 'Erro',
-        message: 'Preencha todos os campos de endereço',
-        color: 'red'
-      });
+      notificationService.showValidationError('Preencha todos os campos de endereço');
       return;
     }
 
@@ -108,7 +183,7 @@ export function RegistroOcorrencia() {
         occurrenceHasVictims: temVitimas === 'Sim',
         occurrenceRequester: nomeSolicitante,
         occurrenceRequesterPhoneNumber: telefoneSolicitante,
-        occurrenceSubType: Number(tipoOcorrencia),
+        occurrenceSubType: Number(subtipoId),
         address: {
           zipCode: cep.replace(/\D/g, ''),
           street: endereco.logradouro,
@@ -122,20 +197,10 @@ export function RegistroOcorrencia() {
 
       await occurrenceService.create(payload);
 
-      notifications.show({
-        title: 'Sucesso',
-        message: 'Ocorrência criada com sucesso',
-        color: 'green'
-      });
-
-      // Redirecionar para a lista de ocorrências
+      errorHandler.showCreateSuccess();
       navigate('/Ocorrencia');
     } catch (error) {
-      notifications.show({
-        title: 'Erro',
-        message: error instanceof Error ? error.message : 'Erro ao conectar com o servidor',
-        color: 'red'
-      });
+      await errorHandler.handleCreateError(error);
     } finally {
       setLoading(false);
     }
@@ -263,18 +328,43 @@ export function RegistroOcorrencia() {
             <form className={classes.form}>
               <Select
                 className={classes.fullWidthField}
-                label="Tipo de Ocorrência"
-                placeholder="Informe o tipo de ocorrência"
-                value={tipoOcorrencia}
-                onChange={setTipoOcorrencia}
-                data={[
-                  { value: '0', label: 'Incêndio urbano' },
-                  { value: '1', label: 'Acidente de trânsito' },
-                  { value: '2', label: 'Resgate em altura' },
-                  { value: '3', label: 'Afogamento' },
-                  { value: '4', label: 'Acidente com produtos perigosos' }
-                ]}
+                label="Natureza"
+                placeholder="Selecione a natureza"
+                data={naturezaOptions}
+                value={naturezaId}
+                onChange={setNaturezaId}
                 required
+                searchable
+                nothingFoundMessage="Nenhuma natureza encontrada"
+                rightSection={naturezaLoading ? <Loader size="xs" /> : undefined}
+              />
+
+              <Select
+                className={classes.fullWidthField}
+                label="Tipo de Ocorrência"
+                placeholder="Selecione o tipo"
+                data={tipoOptions}
+                value={tipoId}
+                onChange={setTipoId}
+                required
+                searchable
+                nothingFoundMessage="Nenhum tipo encontrado"
+                rightSection={tipoLoading ? <Loader size="xs" /> : undefined}
+                disabled={!naturezaId || tipoLoading}
+              />
+
+              <Select
+                className={classes.fullWidthField}
+                label="Subtipo da Ocorrência"
+                placeholder="Selecione o subtipo"
+                data={subtipoOptions}
+                value={subtipoId}
+                onChange={setSubtipoId}
+                required
+                searchable
+                nothingFoundMessage="Nenhum subtipo encontrado"
+                rightSection={subtipoLoading ? <Loader size="xs" /> : undefined}
+                disabled={!tipoId || subtipoLoading}
               />
 
               <Radio.Group

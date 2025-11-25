@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { ReadItems } from '../components/ReadItems';
 import { occurrenceService } from '../services/occurrenceService';
 import type { IOccurrenceDTO } from '../interfaces/IOccurrence';
-import { notifications } from '@mantine/notifications';
 import { Center, Loader } from '@mantine/core';
+import { useErrorHandler } from '../error-handling';
 
 const Ocorrencia = () => {
   const navigate = useNavigate();
   const [occurrences, setOccurrences] = useState<IOccurrenceDTO[]>([]);
   const [loading, setLoading] = useState(true);
+  const errorHandler = useErrorHandler('occurrence');
 
   const fetchOccurrences = async () => {
     try {
@@ -21,11 +22,7 @@ const Ocorrencia = () => {
       const allOccurrences = [...activeResponse.items, ...inactiveResponse.items];
       setOccurrences(allOccurrences);
     } catch (error) {
-      notifications.show({
-        title: 'Erro',
-        message: error instanceof Error ? error.message : 'Erro ao carregar ocorrências',
-        color: 'red',
-      });
+      await errorHandler.handleListError(error);
     } finally {
       setLoading(false);
     }
@@ -67,18 +64,10 @@ const Ocorrencia = () => {
     try {
       const id = Number(row[0]);
       await occurrenceService.deactivate(id);
-      notifications.show({
-        title: 'Sucesso',
-        message: 'Ocorrência desativada com sucesso',
-        color: 'green',
-      });
+      errorHandler.showDeactivateSuccess();
       await fetchOccurrences();
     } catch (error) {
-      notifications.show({
-        title: 'Erro',
-        message: 'Erro ao desativar ocorrência',
-        color: 'red',
-      });
+      await errorHandler.handleDeactivateError(error);
     }
   };
 
@@ -86,18 +75,10 @@ const Ocorrencia = () => {
     try {
       const id = Number(row[0]);
       await occurrenceService.activate(id);
-      notifications.show({
-        title: 'Sucesso',
-        message: 'Ocorrência ativada com sucesso',
-        color: 'green',
-      });
+      errorHandler.showActivateSuccess();
       await fetchOccurrences();
     } catch (error) {
-      notifications.show({
-        title: 'Erro',
-        message: 'Erro ao ativar ocorrência',
-        color: 'red',
-      });
+      await errorHandler.handleActivateError(error);
     }
   };
 

@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { notifications } from '@mantine/notifications';
 import { VehicleForm, type VehicleFormValues } from '../../components/vehicle/VehicleForm';
 import { getVehicleById, updateVehicle } from '../../services/vehicleService';
+import { useErrorHandler } from '../../error-handling';
 
 export function EditarVeiculo() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+  const errorHandler = useErrorHandler('vehicle');
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [initialValues, setInitialValues] = useState<Partial<VehicleFormValues>>();
@@ -41,12 +42,7 @@ export function EditarVeiculo() {
         const errorMessage = error.response?.data?.message || error.message || 'Não foi possível carregar o veículo';
         setError(errorMessage);
         
-        notifications.show({
-          title: 'Erro ao carregar veículo',
-          message: errorMessage,
-          color: 'red',
-          autoClose: false
-        });
+        await errorHandler.handleReadError(error);
       } finally {
         setLoading(false);
       }
@@ -65,20 +61,11 @@ export function EditarVeiculo() {
         battalion: Number(values.battalion)
       });
 
-      notifications.show({
-        title: 'Sucesso',
-        message: 'Veículo atualizado com sucesso',
-        color: 'green'
-      });
-
+      errorHandler.showUpdateSuccess();
       navigate('/administracao/Veiculo');
     } catch (error: any) {
       console.error('Erro ao atualizar veículo:', error);
-      notifications.show({
-        title: 'Erro',
-        message: error.response?.data?.message || 'Não foi possível atualizar o veículo',
-        color: 'red'
-      });
+      await errorHandler.handleUpdateError(error);
     } finally {
       setSubmitting(false);
     }

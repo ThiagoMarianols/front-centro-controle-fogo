@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import classes from '../styles/EditarOcorrencia.module.css';
 import { 
@@ -169,6 +169,9 @@ export default function EditarOcorrencia() {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [modalOpened, setModalOpened] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
+  const hasInitializedNature = useRef(false);
+  const hasInitializedType = useRef(false);
+  const hasInitializedSubType = useRef(false);
 
   // Carrega as naturezas disponíveis
   const loadNatures = async () => {
@@ -191,11 +194,11 @@ export default function EditarOcorrencia() {
     }
   };
 
-  // Carrega os tipos disponíveis
-  const loadTypes = async () => {
+  // Carrega os tipos vinculados à natureza selecionada
+  const loadTypesByNature = async (selectedNatureId: string) => {
     try {
       setLoadingTypes(true);
-      const response = await axios.get<IType[]>(`${import.meta.env.VITE_BASE_URL}/occurrences/types`);
+      const response = await axios.get<IType[]>(`${import.meta.env.VITE_BASE_URL}/occurrences/types/${selectedNatureId}`);
       setTypeOptions(response.data.map(type => ({
         value: type.id.toString(),
         label: type.name
@@ -204,7 +207,7 @@ export default function EditarOcorrencia() {
       console.error('Erro ao carregar tipos:', error);
       notifications.show({
         title: 'Erro',
-        message: 'Não foi possível carregar os tipos',
+        message: 'Não foi possível carregar os tipos para a natureza selecionada',
         color: 'red'
       });
     } finally {
@@ -212,11 +215,11 @@ export default function EditarOcorrencia() {
     }
   };
 
-  // Carrega os subtipos disponíveis
-  const loadSubTypes = async () => {
+  // Carrega os subtipos vinculados ao tipo selecionado
+  const loadSubTypesByType = async (selectedTypeId: string) => {
     try {
       setLoadingSubTypes(true);
-      const response = await axios.get<ISubType[]>(`${import.meta.env.VITE_BASE_URL}/occurrences/subtypes`);
+      const response = await axios.get<ISubType[]>(`${import.meta.env.VITE_BASE_URL}/occurrences/subtypes/${selectedTypeId}`);
       setSubTypeOptions(response.data.map(subType => ({
         value: subType.id.toString(),
         label: subType.name
@@ -225,7 +228,7 @@ export default function EditarOcorrencia() {
       console.error('Erro ao carregar subtipos:', error);
       notifications.show({
         title: 'Erro',
-        message: 'Não foi possível carregar os subtipos',
+        message: 'Não foi possível carregar os subtipos para o tipo selecionado',
         color: 'red'
       });
     } finally {
@@ -301,9 +304,22 @@ export default function EditarOcorrencia() {
     setStatusOptions(STATUS_OPTIONS);
   };
 
-  const getStatusIdFromLabel = (label?: string | null) => {
-    if (!label) return '';
-    const normalized = normalizeStatusLabel(label);
+  const getStatusIdFromLabel = (label?: string | number | null) => {
+    if (label === undefined || label === null) {
+      return '';
+    }
+
+    if (typeof label === 'number') {
+      return label.toString();
+    }
+
+    const trimmed = label.trim();
+
+    if (/^\d+$/.test(trimmed)) {
+      return trimmed;
+    }
+
+    const normalized = normalizeStatusLabel(trimmed);
     return STATUS_NAME_MAP[normalized] || '';
   };
 
@@ -499,8 +515,6 @@ export default function EditarOcorrencia() {
       loadStatus();
       await Promise.all([
         loadNatures(),
-        loadTypes(),
-        loadSubTypes(),
         loadUsers(),
         loadVehicles(),
         loadBattalions()
@@ -531,26 +545,29 @@ export default function EditarOcorrencia() {
     if (!rawOccurrence) return;
 
     // Mapeia natureza
-    if (rawOccurrence.occurrenceNature && natureOptions.length > 0) {
+    if (!hasInitializedNature.current && rawOccurrence.occurrenceNature && natureOptions.length > 0) {
       const nature = natureOptions.find(n => n.label === rawOccurrence.occurrenceNature);
       if (nature) {
         setNatureId(nature.value);
+        hasInitializedNature.current = true;
       }
     }
 
     // Mapeia tipo
-    if (rawOccurrence.occurrenceType && typeOptions.length > 0) {
+    if (!hasInitializedType.current && rawOccurrence.occurrenceType && typeOptions.length > 0) {
       const type = typeOptions.find(t => t.label === rawOccurrence.occurrenceType);
       if (type) {
         setTypeId(type.value);
+        hasInitializedType.current = true;
       }
     }
 
     // Mapeia subtipo
-    if (rawOccurrence.occurrenceSubType && subTypeOptions.length > 0) {
+    if (!hasInitializedSubType.current && rawOccurrence.occurrenceSubType && subTypeOptions.length > 0) {
       const subType = subTypeOptions.find(st => st.label === rawOccurrence.occurrenceSubType);
       if (subType) {
         setSubTypeId(subType.value);
+        hasInitializedSubType.current = true;
       }
     }
 
@@ -565,6 +582,30 @@ export default function EditarOcorrencia() {
       setBattalionIds(battalionIds);
     }
   }, [rawOccurrence, natureOptions, typeOptions, subTypeOptions, availableBattalions]);
+
+  useEffect(() => {
+    setTypeId('');
+    setTypeOptions([]);
+    setSubTypeId('');
+    setSubTypeOptions([]);
+
+    if (!natureId) {
+      return;
+    }
+
+    loadTypesByNature(natureId);
+  }, [natureId]);
+
+  useEffect(() => {
+    setSubTypeId('');
+    setSubTypeOptions([]);
+
+    if (!typeId) {
+      return;
+    }
+
+    loadSubTypesByType(typeId);
+  }, [typeId]);
 
   // Função para buscar CEP
   const buscarCep = async (cep: string) => {
@@ -779,7 +820,7 @@ export default function EditarOcorrencia() {
               searchable
               clearable
               nothingFoundMessage="Nenhum tipo encontrado"
-              disabled={loadingTypes}
+              disabled={!natureId || loadingTypes}
               rightSection={loadingTypes ? <Loader size="xs" /> : null}
             />
             
@@ -794,7 +835,7 @@ export default function EditarOcorrencia() {
               searchable
               clearable
               nothingFoundMessage="Nenhum subtipo encontrado"
-              disabled={loadingSubTypes}
+              disabled={!typeId || loadingSubTypes}
               rightSection={loadingSubTypes ? <Loader size="xs" /> : null}
             />
           </div>

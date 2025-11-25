@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import classes from '../../styles/administracao/RegUser.module.css';
 import {  
   Select,
+  MultiSelect,
   TextInput,
   Paper,
   Title,
@@ -13,13 +14,76 @@ import { registerUser } from '../../services/userService';
 import type { UserRegisterDTO } from '../../interfaces/IUser';
 import { getBattalionsPaginated } from '../../services/battalionService';
 import { getAllPatents } from '../../services/patentService';
+import { getAllRoles } from '../../services/roleService';
 import { useNavigate } from 'react-router-dom';
+
+const STATE_OPTIONS = [
+  'Acre (AC)',
+  'Alagoas (AL)',
+  'Amapá (AP)',
+  'Amazonas (AM)',
+  'Bahia (BA)',
+  'Ceará (CE)',
+  'Distrito Federal (DF)',
+  'Espírito Santo (ES)',
+  'Goiás (GO)',
+  'Maranhão (MA)',
+  'Mato Grosso (MT)',
+  'Mato Grosso do Sul (MS)',
+  'Minas Gerais (MG)',
+  'Pará (PA)',
+  'Paraíba (PB)',
+  'Paraná (PR)',
+  'Pernambuco (PE)',
+  'Piauí (PI)',
+  'Rio de Janeiro (RJ)',
+  'Rio Grande do Norte (RN)',
+  'Rio Grande do Sul (RS)',
+  'Rondônia (RO)',
+  'Roraima (RR)',
+  'Santa Catarina (SC)',
+  'São Paulo (SP)',
+  'Sergipe (SE)',
+  'Tocantins (TO)'
+];
+
+const findStateLabelByUF = (uf: string): string | undefined => {
+  if (!uf) return undefined;
+  const upperUf = uf.toUpperCase();
+  return STATE_OPTIONS.find((option) => option.includes(`(${upperUf})`));
+};
+
+const formatPhone = (value: string) => {
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  if (digits.length === 0) return '';
+  if (digits.length <= 2) return `(${digits}`;
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  if (digits.length <= 10) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  }
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+};
+
+const formatCPF = (value: string) => {
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+  if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+};
+
+const formatCep = (value: string) => {
+  const digits = value.replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 5) return digits;
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+};
 
 export function CadastroUsuario() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [battalions, setBattalions] = useState<Array<{ value: string; label: string }>>([]);
     const [patents, setPatents] = useState<Array<{ value: string; label: string }>>([]);
+    const [roles, setRoles] = useState<Array<{ value: string; label: string }>>([]);
     
     // Personal data
     const [name, setName] = useState('');
@@ -31,6 +95,7 @@ export function CadastroUsuario() {
     const [gender, setGender] = useState<string | null>(null);
     const [patent, setPatent] = useState<string | null>(null);
     const [battalion, setBattalion] = useState<string | null>(null);
+    const [roleIds, setRoleIds] = useState<string[]>([]);
     const [dateBirth, setDateBirth] = useState('');
     
     // Address data
@@ -49,6 +114,7 @@ export function CadastroUsuario() {
     useEffect(() => {
       fetchBattalions();
       fetchPatents();
+      fetchRoles();
     }, []);
 
     const fetchBattalions = async () => {
@@ -89,6 +155,57 @@ export function CadastroUsuario() {
       }
     };
 
+    const fetchRoles = async () => {
+      try {
+        const roleList = await getAllRoles();
+        const options = roleList
+          .filter((role) => role.active)
+          .map((role) => ({ value: role.id.toString(), label: role.name }));
+        setRoles(options);
+      } catch (error) {
+        notifications.show({
+          title: 'Erro',
+          message: 'Erro ao carregar perfis',
+          color: 'red',
+        });
+      }
+    };
+
+    const fetchAddressByCep = async (value: string) => {
+      const sanitized = value.replace(/\D/g, '');
+      if (sanitized.length !== 8) return;
+
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${sanitized}/json/`);
+        const data = await response.json();
+
+        if (data.erro) {
+          notifications.show({
+            title: 'CEP não encontrado',
+            message: 'Verifique o CEP informado e tente novamente.',
+            color: 'yellow',
+          });
+          return;
+        }
+
+        setStreet(data.logradouro || '');
+        setNeighborhood(data.bairro || '');
+        setCity(data.localidade || '');
+        setComplement(data.complemento || '');
+        const stateLabel = findStateLabelByUF(data.uf || '');
+        if (stateLabel) {
+          setState(stateLabel);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar o CEP:', error);
+        notifications.show({
+          title: 'Erro',
+          message: 'Não foi possível buscar o CEP informado.',
+          color: 'red',
+        });
+      }
+    };
+
     const handleSubmit = async () => {
 
       const missingFields = [];
@@ -102,6 +219,7 @@ export function CadastroUsuario() {
       if (!patent) missingFields.push('Patente');
       if (!battalion) missingFields.push('Batalhão');
       if (!dateBirth) missingFields.push('Data de Nascimento');
+      if (roleIds.length === 0) missingFields.push('Perfil');
       
       if (missingFields.length > 0) {
         console.log('Missing fields:', missingFields);
@@ -150,23 +268,24 @@ export function CadastroUsuario() {
           name,
           username,
           email,
-          cpf: cpf.replace(/\D/g, ''),
+          cpf,
           matriculates,
-          phoneNumber: phoneNumber.replace(/\D/g, ''),
+          phoneNumber,
           gender: gender === 'Masculino' ? 'M' : 'F',
           patent: parseInt(patent!),
           battalion: parseInt(battalion!),
           dateBirth: new Date(dateBirth).toISOString(),
           password,
           address: {
-            zipCode: zipCode.replace(/\D/g, ''),
+            zipCode,
             street,
             number: parseInt(number),
             complement,
             neighborhood,
             city,
             state: state!.split('(')[1].replace(')', '').trim()
-          }
+          },
+          roleIds: roleIds.map((id) => Number(id))
         };
 
         console.log('Sending userData to backend:', userData);
@@ -236,8 +355,8 @@ export function CadastroUsuario() {
                 placeholder="000.000.000-00"
                 description="Forneça o CPF do usuario (apenas números)"
                 inputWrapperOrder={['label', 'error', 'input', 'description']}
-                value={cpf}
-                onChange={(e) => setCpf(e.target.value)}
+                value={formatCPF(cpf)}
+                onChange={(e) => setCpf(e.target.value.replace(/\D/g, '').slice(0, 11))}
                 maxLength={14}
                 required
               />
@@ -255,8 +374,8 @@ export function CadastroUsuario() {
                 placeholder="(00) 00000-0000"
                 description="Forneça o numero de telefone do usuario (11 dígitos)"
                 inputWrapperOrder={['label', 'error', 'input', 'description']}
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
+                value={formatPhone(phoneNumber)}
+                onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 11))}
                 maxLength={15}
                 required
               />
@@ -296,6 +415,16 @@ export function CadastroUsuario() {
                 onChange={setBattalion}
                 required
               />
+              <MultiSelect
+                className={classes.fullWidthField}
+                label="Perfil"
+                placeholder="Selecione o perfil"
+                data={roles}
+                value={roleIds}
+                onChange={setRoleIds}
+                required
+                searchable
+              />
             </div>
           </Paper>
           <Paper withBorder shadow="sm" p="md" radius="md" className={classes.paper}>
@@ -306,8 +435,14 @@ export function CadastroUsuario() {
                 placeholder="00000-000"
                 description="Forneça o cep do usuario (8 dígitos)"
                 inputWrapperOrder={['label', 'error', 'input', 'description']}
-                value={zipCode}
-                onChange={(e) => setZipCode(e.target.value)}
+                value={formatCep(zipCode)}
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/\D/g, '').slice(0, 8);
+                  setZipCode(digits);
+                  if (digits.length === 8) {
+                    fetchAddressByCep(digits);
+                  }
+                }}
                 maxLength={9}
                 required
               />
@@ -362,35 +497,7 @@ export function CadastroUsuario() {
                 value={state}
                 onChange={setState}
                 required
-                data={[
-                  'Acre (AC)',
-                  'Alagoas (AL)',
-                  'Amapá (AP)',
-                  'Amazonas (AM)',
-                  'Bahia (BA)',
-                  'Ceará (CE)',
-                  'Distrito Federal (DF)',
-                  'Espírito Santo (ES)',
-                  'Goiás (GO)',
-                  'Maranhão (MA)',
-                  'Mato Grosso (MT)',
-                  'Mato Grosso do Sul (MS)',
-                  'Minas Gerais (MG)',
-                  'Pará (PA)',
-                  'Paraíba (PB)',
-                  'Paraná (PR)',
-                  'Pernambuco (PE)',
-                  'Piauí (PI)',
-                  'Rio de Janeiro (RJ)',
-                  'Rio Grande do Norte (RN)',
-                  'Rio Grande do Sul (RS)',
-                  'Rondônia (RO)',
-                  'Roraima (RR)',
-                  'Santa Catarina (SC)',
-                  'São Paulo (SP)',
-                  'Sergipe (SE)',
-                  'Tocantins (TO)',
-                ]}
+                data={STATE_OPTIONS}
               />
 
 

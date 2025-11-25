@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client'
 import './styles/index.css'
 import App from './App.tsx'
 import { MantineProvider } from '@mantine/core'
+import { Notifications } from '@mantine/notifications'
+import '@mantine/notifications/styles.css'
 import { ProtectedRoute } from './components/auth/ProtectedRoute.tsx'
 import { AuthProvider } from './context/authContext';
 
@@ -97,6 +99,7 @@ if (
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MantineProvider>
+      <Notifications position="top-right" autoClose={4000} zIndex={2100} />
       <AuthProvider>
         <RouterProvider router={router} />
       </AuthProvider>

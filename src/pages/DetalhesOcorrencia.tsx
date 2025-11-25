@@ -1,11 +1,165 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Paper, Title, Button, Grid, Text, Badge, Loader, Center, Group, Divider, Card, Image, ActionIcon } from '@mantine/core';
-import { IconArrowLeft, IconMapPin, IconPhone, IconUser, IconClock, IconFileText, IconInfoCircle, IconPhoto, IconEye } from '@tabler/icons-react';
+import { IconArrowLeft, IconMapPin, IconPhone, IconUser, IconClock, IconFileText, IconInfoCircle, IconPhoto, IconEye, IconUsers, IconCar, IconBuildingCommunity } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { occurrenceService } from '../services/occurrenceService';
 import type { IOccurrenceDTO } from '../interfaces/IOccurrence';
+import { extractBattalionAddress } from '../utils/battalionAddress';
 import classes from '../styles/RegistroOcorrencia.module.css';
+
+type ResolvedUser = {
+  id: string | number;
+  name: string;
+  patent?: string;
+  phone?: string;
+  matricula?: string;
+  battalion?: string;
+  active?: boolean;
+};
+
+type ResolvedVehicle = {
+  id: string | number;
+  name: string;
+  battalion?: string;
+  active?: boolean;
+};
+
+type ResolvedBattalion = {
+  id: string | number;
+  name: string;
+  city?: string;
+  state?: string;
+  phone?: string;
+  active?: boolean;
+};
+
+const toArray = (value: unknown): any[] => (Array.isArray(value) ? value : []);
+
+const getNestedValue = (source: unknown, path: string) => {
+  if (!source || typeof source !== 'object') {
+    return undefined;
+  }
+
+  return path.split('.').reduce<unknown>((acc, key) => {
+    if (acc && typeof acc === 'object') {
+      const record = acc as Record<string, unknown>;
+      return record[key];
+    }
+    return undefined;
+  }, source);
+};
+
+const pickValue = (source: unknown, paths: string[]) => {
+  for (const path of paths) {
+    const value = getNestedValue(source, path);
+    if (value !== null && value !== undefined && value !== '') {
+      return value;
+    }
+  }
+  return undefined;
+};
+
+const formatDisplay = (value: unknown) => {
+  if (value === null || value === undefined || value === '') {
+    return '—';
+  }
+  return String(value);
+};
+
+const resolveUsers = (rawUsers: unknown): ResolvedUser[] =>
+  toArray(rawUsers).map((item, index) => {
+    if (item === null || item === undefined) {
+      return {
+        id: index,
+        name: 'Não informado'
+      };
+    }
+
+    if (typeof item === 'string' || typeof item === 'number') {
+      return {
+        id: index,
+        name: String(item)
+      };
+    }
+
+    const user = item as Record<string, any>;
+    const battalionName = pickValue(user, [
+      'battalion.name',
+      'battalionName',
+      'battalion.label',
+      'user.battalion.name',
+      'battalionResponse.name'
+    ]);
+    return {
+      id: user.id ?? user.userId ?? index,
+      name: user.name || user.normalizedName || user.username || 'Não informado',
+      patent: pickValue(user, ['patent.name', 'patentName', 'patent']) as string | undefined,
+      phone: pickValue(user, ['phoneNumber', 'phone', 'telefone', 'contact.phone', 'contactPhone', 'user.phoneNumber']) as string | undefined,
+      matricula: user.matriculates || user.matricula,
+      battalion: battalionName ? String(battalionName) : undefined,
+      active: typeof user.active === 'boolean' ? user.active : undefined,
+    };
+  });
+
+const resolveVehicles = (rawVehicles: unknown): ResolvedVehicle[] =>
+  toArray(rawVehicles).map((item, index) => {
+    if (item === null || item === undefined) {
+      return {
+        id: index,
+        name: `Viatura ${index + 1}`
+      };
+    }
+
+    if (typeof item === 'string' || typeof item === 'number') {
+      return {
+        id: index,
+        name: String(item)
+      };
+    }
+
+    const vehicle = item as Record<string, any>;
+    const battalionName = pickValue(vehicle, [
+      'battalion.name',
+      'battalionName',
+      'battalion.label',
+      'battalionResponse.name'
+    ]);
+    return {
+      id: vehicle.id ?? index,
+      name: vehicle.name || vehicle.identifier || vehicle.plate || `Viatura ${index + 1}`,
+      battalion: battalionName ? String(battalionName) : undefined,
+      active: typeof vehicle.active === 'boolean' ? vehicle.active : undefined,
+    };
+  });
+
+const resolveBattalions = (rawBattalions: unknown): ResolvedBattalion[] =>
+  toArray(rawBattalions).map((item, index) => {
+    if (item === null || item === undefined) {
+      return {
+        id: index,
+        name: 'Batalhão não identificado'
+      };
+    }
+
+    if (typeof item === 'string' || typeof item === 'number') {
+      return {
+        id: index,
+        name: String(item)
+      };
+    }
+
+    const battalion = item as Record<string, any>;
+    const normalizedAddress = extractBattalionAddress(battalion);
+    return {
+      id: battalion.id ?? index,
+      name: battalion.name || battalion.label || 'Batalhão não identificado',
+      city: battalion.city || battalion.address?.city || normalizedAddress?.city,
+      state: battalion.state || battalion.address?.state || normalizedAddress?.state,
+      phone: battalion.phoneNumber || battalion.phone || battalion.telefone,
+      active: typeof battalion.active === 'boolean' ? battalion.active : undefined,
+    };
+  });
 
 export function DetalhesOcorrencia() {
   const { id } = useParams<{ id: string }>();
@@ -79,6 +233,25 @@ export function DetalhesOcorrencia() {
       default: return 'gray';
     }
   };
+
+  const resolvedUsers = resolveUsers(
+    (occurrence as any).users ||
+    (occurrence as any).militaresEnvolvidos ||
+    (occurrence as any).militares ||
+    (occurrence as any).userResponses
+  ).filter((user) => Boolean(user.name && user.name !== ''));
+
+  const resolvedVehicles = resolveVehicles(
+    (occurrence as any).vehicles ||
+    (occurrence as any).viaturas ||
+    (occurrence as any).vehicleResponses
+  ).filter((vehicle) => Boolean(vehicle.name && vehicle.name !== ''));
+
+  const resolvedBattalions = resolveBattalions(
+    (occurrence as any).battalions ||
+    (occurrence as any).batalhoes ||
+    (occurrence as any).battalionResponses
+  ).filter((battalion) => Boolean(battalion.name && battalion.name !== ''));
 
   return (
     <div className={classes.centerWrap}>
@@ -203,6 +376,102 @@ export function DetalhesOcorrencia() {
             )}
           </Grid>
         </Card>
+
+        {/* Resumo das Equipes */}
+        {(resolvedUsers.length > 0 || resolvedVehicles.length > 0 || resolvedBattalions.length > 0) && (
+          <Grid gutter="lg">
+            {resolvedUsers.length > 0 && (
+              <Grid.Col span={12}>
+                <Card shadow="sm" padding="lg" radius="md" withBorder>
+                  <Group mb="md">
+                    <IconUsers size={24} style={{ color: '#B13433' }} />
+                    <Title order={4} style={{ color: '#B13433' }}>Militares Envolvidos</Title>
+                    <Badge color="gray" variant="light">{resolvedUsers.length}</Badge>
+                  </Group>
+                  <Grid gutter="md">
+                    {resolvedUsers.map((user) => (
+                      <Grid.Col key={user.id} span={{ base: 12, sm: 6, md: 4 }}>
+                        <Paper
+                          p="md"
+                          radius="md"
+                          withBorder
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => {
+                            if (user.id !== undefined && user.id !== null) {
+                              navigate(`/administracao/DetalhesUsuario/${user.id}`);
+                            }
+                          }}
+                        >
+                          <Group justify="space-between" align="center" mb="xs">
+                            <Text fw={600}>{formatDisplay(user.name)}</Text>
+                            {typeof user.active === 'boolean' && (
+                              <Badge color={user.active ? 'green' : 'red'} variant="light">
+                                {user.active ? 'Ativo' : 'Inativo'}
+                              </Badge>
+                            )}
+                          </Group>
+                          <Divider my="sm" />
+                          <Text size="sm" c="dimmed">
+                            Matrícula: <Text component="span" fw={600}>{formatDisplay(user.matricula)}</Text>
+                          </Text>
+                        </Paper>
+                      </Grid.Col>
+                    ))}
+                  </Grid>
+                </Card>
+              </Grid.Col>
+            )}
+
+            {resolvedVehicles.length > 0 && (
+              <Grid.Col span={12}>
+                <Card shadow="sm" padding="lg" radius="md" withBorder>
+                  <Group mb="md">
+                    <IconCar size={24} style={{ color: '#B13433' }} />
+                    <Title order={4} style={{ color: '#B13433' }}>Viaturas Empregadas</Title>
+                    <Badge color="gray" variant="light">{resolvedVehicles.length}</Badge>
+                  </Group>
+                  <Grid gutter="md">
+                    {resolvedVehicles.map((vehicle) => (
+                      <Grid.Col key={vehicle.id} span={{ base: 12, sm: 6, md: 4 }}>
+                        <Paper p="md" radius="md" withBorder>
+                          <Text fw={600}>{formatDisplay(vehicle.name)}</Text>
+                          <Divider my="sm" />
+                          <Text size="sm"><strong>Batalhão:</strong> {formatDisplay(vehicle.battalion)}</Text>
+                          {typeof vehicle.active === 'boolean' && (
+                            <Badge mt="sm" color={vehicle.active ? 'green' : 'red'} variant="light">
+                              {vehicle.active ? 'Ativa' : 'Inativa'}
+                            </Badge>
+                          )}
+                        </Paper>
+                      </Grid.Col>
+                    ))}
+                  </Grid>
+                </Card>
+              </Grid.Col>
+            )}
+
+            {resolvedBattalions.length > 0 && (
+              <Grid.Col span={12}>
+                <Card shadow="sm" padding="lg" radius="md" withBorder>
+                  <Group mb="md">
+                    <IconBuildingCommunity size={24} style={{ color: '#B13433' }} />
+                    <Title order={4} style={{ color: '#B13433' }}>Batalhões Envolvidos</Title>
+                    <Badge color="gray" variant="light">{resolvedBattalions.length}</Badge>
+                  </Group>
+                  <Grid gutter="md">
+                    {resolvedBattalions.map((battalion) => (
+                      <Grid.Col key={battalion.id} span={{ base: 12, sm: 6, md: 4 }}>
+                        <Paper p="md" radius="md" withBorder>
+                          <Text fw={600}>{formatDisplay(battalion.name)}</Text>
+                        </Paper>
+                      </Grid.Col>
+                    ))}
+                  </Grid>
+                </Card>
+              </Grid.Col>
+            )}
+          </Grid>
+        )}
 
         {/* Detalhes do Atendimento (se houver) */}
         {((occurrence as any).occurrenceDetails || (occurrence as any).latitude || (occurrence as any).longitude) && (

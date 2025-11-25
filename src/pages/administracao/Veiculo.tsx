@@ -7,13 +7,14 @@ import {
   activateVehicle
 } from '../../services/vehicleService';
 import type { VehicleDTO } from '../../interfaces/IVehicle';
-import { notifications } from '@mantine/notifications';
 import { Center, Loader } from '@mantine/core';
+import { useErrorHandler } from '../../error-handling';
 
 const Veiculo = () => {
   const [vehicles, setVehicles] = useState<VehicleDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const errorHandler = useErrorHandler('vehicle');
 
   const fetchVehicles = async () => {
     try {
@@ -26,11 +27,7 @@ const Veiculo = () => {
       const allVehicles = [...activeResponse.items, ...inactiveResponse.items];
       setVehicles(allVehicles);
     } catch (error) {
-      notifications.show({
-        title: 'Erro',
-        message: 'Erro ao carregar veículos',
-        color: 'red',
-      });
+      await errorHandler.handleListError(error);
     } finally {
       setLoading(false);
     }
@@ -44,18 +41,10 @@ const Veiculo = () => {
     try {
       const id = Number(row[0]);
       await deactivateVehicle(id);
-      notifications.show({
-        title: 'Sucesso',
-        message: 'Veículo desativado com sucesso',
-        color: 'green',
-      });
+      errorHandler.showDeactivateSuccess();
       await fetchVehicles();
     } catch (error) {
-      notifications.show({
-        title: 'Erro',
-        message: 'Erro ao desativar veículo',
-        color: 'red',
-      });
+      await errorHandler.handleDeactivateError(error);
     }
   };
 
@@ -63,18 +52,10 @@ const Veiculo = () => {
     try {
       const id = Number(row[0]);
       await activateVehicle(id);
-      notifications.show({
-        title: 'Sucesso',
-        message: 'Veículo ativado com sucesso',
-        color: 'green',
-      });
+      errorHandler.showActivateSuccess();
       await fetchVehicles();
     } catch (error) {
-      notifications.show({
-        title: 'Erro',
-        message: 'Erro ao ativar veículo',
-        color: 'red',
-      });
+      await errorHandler.handleActivateError(error);
     }
   };
 

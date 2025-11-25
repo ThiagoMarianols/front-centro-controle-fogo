@@ -79,6 +79,7 @@ export interface UserListDTO {
 
 export interface UserUpdateDTO {
   username: string;
+  password?: string;
   email: string;
   phoneNumber: string;
   cpf: string;

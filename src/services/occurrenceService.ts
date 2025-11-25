@@ -204,6 +204,19 @@ export const occurrenceService = {
     return await response.json();
   },
 
+  async getTypesByNature(natureId: number): Promise<IOccurrenceType[]> {
+    const response = await fetch(`${API_URL}/types/${natureId}`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao buscar tipos de ocorrência para a natureza selecionada');
+    }
+
+    return await response.json();
+  },
+
   async getSubtypes(): Promise<IOccurrenceSubtype[]> {
     const response = await fetch(`${API_URL}/subtypes`, {
       method: 'GET',
@@ -212,6 +225,19 @@ export const occurrenceService = {
 
     if (!response.ok) {
       throw new Error('Erro ao buscar subtipos de ocorrência');
+    }
+
+    return await response.json();
+  },
+
+  async getSubtypesByType(typeId: number): Promise<IOccurrenceSubtype[]> {
+    const response = await fetch(`${API_URL}/subtypes/${typeId}`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao buscar subtipos para o tipo selecionado');
     }
 
     return await response.json();

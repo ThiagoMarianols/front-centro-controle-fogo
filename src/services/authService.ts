@@ -88,7 +88,7 @@ export async function getUserById(id: number): Promise<UserDetailDTO> {
 }
 
 export async function updateUser(id: number, data: UserUpdateDTO): Promise<UserDetailDTO> {
-  const response = await axios.put(`${API_URL}/auth/${id}`, data);
+  const response = await axios.put(`${API_URL}/auth/update/${id}`, data);
   return response.data;
 }
 

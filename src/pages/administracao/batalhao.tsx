@@ -8,13 +8,14 @@ import {
 } from '../../services/battalionService';
 import type { BattalionDTO } from '../../interfaces/IBattalion';
 import { extractBattalionAddress } from '../../utils/battalionAddress';
-import { notifications } from '@mantine/notifications';
 import { Center, Loader } from '@mantine/core';
+import { useErrorHandler } from '../../error-handling';
 
 const Batalhao = () => {
   const [battalions, setBattalions] = useState<BattalionDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const errorHandler = useErrorHandler('battalion');
 
   const fetchBattalions = async () => {
     try {
@@ -27,11 +28,7 @@ const Batalhao = () => {
       const allBattalions = [...activeResponse.items, ...inactiveResponse.items];
       setBattalions(allBattalions);
     } catch (error) {
-      notifications.show({
-        title: 'Erro',
-        message: 'Erro ao carregar batalhões',
-        color: 'red',
-      });
+      await errorHandler.handleListError(error);
     } finally {
       setLoading(false);
     }
@@ -45,18 +42,10 @@ const Batalhao = () => {
     try {
       const id = Number(row[0]);
       await deactivateBattalion(id);
-      notifications.show({
-        title: 'Sucesso',
-        message: 'Batalhão desativado com sucesso',
-        color: 'green',
-      });
+      errorHandler.showDeactivateSuccess();
       await fetchBattalions();
     } catch (error) {
-      notifications.show({
-        title: 'Erro',
-        message: 'Erro ao desativar batalhão',
-        color: 'red',
-      });
+      await errorHandler.handleDeactivateError(error);
     }
   };
 
@@ -64,18 +53,10 @@ const Batalhao = () => {
     try {
       const id = Number(row[0]);
       await activateBattalion(id);
-      notifications.show({
-        title: 'Sucesso',
-        message: 'Batalhão ativado com sucesso',
-        color: 'green',
-      });
+      errorHandler.showActivateSuccess();
       await fetchBattalions();
     } catch (error) {
-      notifications.show({
-        title: 'Erro',
-        message: 'Erro ao ativar batalhão',
-        color: 'red',
-      });
+      await errorHandler.handleActivateError(error);
     }
   };
 
