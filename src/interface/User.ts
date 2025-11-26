@@ -1,8 +1,10 @@
 export interface User {
-    idUser: number;
+    idUser?: number;
+    id?: number;
     username: string;
     email: string;
     normalizedName: string;
+    userRoles?: UserRolesDTO[];
 }
 
 export interface RolesDTO {

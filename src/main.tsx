@@ -39,25 +39,38 @@ const router = createBrowserRouter([
     path: '/',
     element: <App />,
     children: [
+      // Home - todos podem acessar
       { path: '', element: <ProtectedRoute><Home /></ProtectedRoute> },
-      { path: 'administracao/CadastroUsuario', element: <ProtectedRoute><CadastroUsuario /></ProtectedRoute> },
-      { path: 'administracao/Users', element: <ProtectedRoute><Users /></ProtectedRoute> },
-      { path: 'administracao/EditarUsuario/:id', element: <ProtectedRoute><EditarUsuario /></ProtectedRoute> },
-      { path: 'administracao/DetalhesUsuario/:id', element: <ProtectedRoute><DetalhesUsuario /></ProtectedRoute> },
-      { path: 'administracao/Relatorios', element: <ProtectedRoute><Relatorios /></ProtectedRoute> },
-      { path: 'administracao/Batalhao', element: <ProtectedRoute><Batalhao /></ProtectedRoute> },
-      { path: 'dashboard', element: <ProtectedRoute><Dashboard /></ProtectedRoute> },
+      
+      // Usuários - apenas ADMINISTRADOR (OBSERVADOR pode ver lista e detalhes)
+      { path: 'administracao/CadastroUsuario', element: <ProtectedRoute allowedRoles={['ADMINISTRADOR']}><CadastroUsuario /></ProtectedRoute> },
+      { path: 'administracao/Users', element: <ProtectedRoute allowedRoles={['ADMINISTRADOR', 'OBSERVADOR']}><Users /></ProtectedRoute> },
+      { path: 'administracao/EditarUsuario/:id', element: <ProtectedRoute allowedRoles={['ADMINISTRADOR']}><EditarUsuario /></ProtectedRoute> },
+      { path: 'administracao/DetalhesUsuario/:id', element: <ProtectedRoute allowedRoles={['ADMINISTRADOR', 'OBSERVADOR']}><DetalhesUsuario /></ProtectedRoute> },
+      
+      // Relatórios e Dashboard - ADMINISTRADOR e OBSERVADOR
+      { path: 'administracao/Relatorios', element: <ProtectedRoute allowedRoles={['ADMINISTRADOR', 'OBSERVADOR']}><Relatorios /></ProtectedRoute> },
+      { path: 'dashboard', element: <ProtectedRoute allowedRoles={['ADMINISTRADOR', 'OBSERVADOR']}><Dashboard /></ProtectedRoute> },
+      
+      // Batalhão - ADMINISTRADOR (OBSERVADOR pode ver lista)
+      { path: 'administracao/Batalhao', element: <ProtectedRoute allowedRoles={['ADMINISTRADOR', 'OBSERVADOR']}><Batalhao /></ProtectedRoute> },
+      { path: 'administracao/RegistroBatalhao', element: <ProtectedRoute allowedRoles={['ADMINISTRADOR']}><RegistroBatalhao /></ProtectedRoute> },
+      { path: 'administracao/EditarBatalhao/:id', element: <ProtectedRoute allowedRoles={['ADMINISTRADOR']}><EditarBatalhao /></ProtectedRoute> },
+      
+      // Veículos - ADMINISTRADOR (OBSERVADOR pode ver lista)
+      { path: 'administracao/Veiculo', element: <ProtectedRoute allowedRoles={['ADMINISTRADOR', 'OBSERVADOR']}><Veiculo /></ProtectedRoute> },
+      { path: 'administracao/RegistroVeiculo', element: <ProtectedRoute allowedRoles={['ADMINISTRADOR']}><RegistroVeiculo /></ProtectedRoute> },
+      { path: 'administracao/EditarVeiculo/:id', element: <ProtectedRoute allowedRoles={['ADMINISTRADOR']}><EditarVeiculo /></ProtectedRoute> },
+      
+      // Cadastro de tipos de ocorrência - apenas ADMINISTRADOR
+      { path: 'administracao/CadastroOcorrenciaSecun', element: <ProtectedRoute allowedRoles={['ADMINISTRADOR']}><CadastroOcorrenciaSecun /></ProtectedRoute> },
+      
+      // Ocorrências - todos podem ver, mas AGENTE e ADMINISTRADOR podem editar/criar
       { path: 'Ocorrencia', element: <ProtectedRoute><Ocorrencia /></ProtectedRoute> },
       { path: 'DetalhesOcorrencia/:id', element: <ProtectedRoute><DetalhesOcorrencia /></ProtectedRoute> },
-      { path: 'CompletarOcorrencia/:id', element: <ProtectedRoute><CompletarOcorrencia /></ProtectedRoute> },
-      { path: 'RegistroOcorrencia', element: <ProtectedRoute><RegistroOcorrencia /></ProtectedRoute> },
-      { path: 'EditarOcorrencia/:id', element: <ProtectedRoute><EditarOcorrencia /></ProtectedRoute> },
-      { path: 'administracao/RegistroBatalhao', element: <ProtectedRoute><RegistroBatalhao /></ProtectedRoute> },
-      { path: 'administracao/EditarBatalhao/:id', element: <ProtectedRoute><EditarBatalhao /></ProtectedRoute> },
-      { path: 'administracao/Veiculo', element: <ProtectedRoute><Veiculo /></ProtectedRoute> },
-      { path: 'administracao/RegistroVeiculo', element: <ProtectedRoute><RegistroVeiculo /></ProtectedRoute> },
-      { path: 'administracao/EditarVeiculo/:id', element: <ProtectedRoute><EditarVeiculo /></ProtectedRoute> },
-      { path: 'administracao/CadastroOcorrenciaSecun', element: <ProtectedRoute><CadastroOcorrenciaSecun /></ProtectedRoute> },
+      { path: 'CompletarOcorrencia/:id', element: <ProtectedRoute allowedRoles={['ADMINISTRADOR', 'AGENTE']}><CompletarOcorrencia /></ProtectedRoute> },
+      { path: 'RegistroOcorrencia', element: <ProtectedRoute allowedRoles={['ADMINISTRADOR', 'AGENTE']}><RegistroOcorrencia /></ProtectedRoute> },
+      { path: 'EditarOcorrencia/:id', element: <ProtectedRoute allowedRoles={['ADMINISTRADOR', 'AGENTE']}><EditarOcorrencia /></ProtectedRoute> },
     ],
   },
   {

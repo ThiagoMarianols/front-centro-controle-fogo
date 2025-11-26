@@ -10,4 +10,8 @@ export interface ParamsReaderItems {
   statusColumnIndex?: number;
   hasStatusFilter?: boolean;
   searchPlaceholder?: string;
+  /** Esconde botões de ação (editar, excluir, ativar) - útil para OBSERVADOR */
+  hideActions?: boolean;
+  /** Esconde botão de criar novo item - útil para OBSERVADOR */
+  hideCreateButton?: boolean;
 }

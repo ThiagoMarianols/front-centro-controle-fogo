@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@mantine/core';
 import type { ParamsReaderItems } from '../interface/IReaderItems';
 import classes from '../styles/administracao/ReadItems.module.css';
+import { usePermissions } from '../hooks/usePermissions';
 
 const formatPhoneNumber = (value: string | number) => {
   const digits = String(value).replace(/\D/g, '').slice(0, 11);
@@ -28,6 +29,13 @@ const formatPhoneNumber = (value: string | number) => {
 };
 
 export function ReadItems({ paramsReaderItems }: { paramsReaderItems: ParamsReaderItems }) {
+  const { isObservador, canEdit, canCreate, canDelete } = usePermissions();
+  
+  // Determina se deve esconder ações baseado nas permissões
+  const hideActions = paramsReaderItems.hideActions ?? isObservador;
+  // Esconde o botão de criar apenas para OBSERVADOR (que não pode criar)
+  const hideCreateButton = paramsReaderItems.hideCreateButton ?? isObservador;
+
   const handleEdit = (row: (string | number)[], index: number) => {
     if (paramsReaderItems.onEdit) {
       paramsReaderItems.onEdit(row, index);
@@ -163,13 +171,15 @@ export function ReadItems({ paramsReaderItems }: { paramsReaderItems: ParamsRead
             rightSection={<IconSearch size={16} />}
             className={classes.searchInput}
           />
-          <Button
-            variant="filled"
-            className={classes.button}
-            onClick={() => navigate(url)}
-          >
-            {paramsReaderItems.textButton}
-          </Button>
+          {!hideCreateButton && (
+            <Button
+              variant="filled"
+              className={classes.button}
+              onClick={() => navigate(url)}
+            >
+              {paramsReaderItems.textButton}
+            </Button>
+          )}
         </div>
       </div>
       <Table.ScrollContainer minWidth={300} className={classes.tableContainer}>
@@ -188,7 +198,9 @@ export function ReadItems({ paramsReaderItems }: { paramsReaderItems: ParamsRead
                   </button>
                 </Table.Th>
               ))}
-              <Table.Th className={`${classes.tableTh} ${classes.actionsHeader}`}>Ações</Table.Th>
+              {!hideActions && (
+                <Table.Th className={`${classes.tableTh} ${classes.actionsHeader}`}>Ações</Table.Th>
+              )}
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -203,36 +215,38 @@ export function ReadItems({ paramsReaderItems }: { paramsReaderItems: ParamsRead
                     <Table.Td key={cellIndex}>{displayValue}</Table.Td>
                   );
                 })}
-                <Table.Td className={classes.actionsCell}>
-                  <Group gap="sm" className={classes.actionsGroup}>
-                    <ActionIcon 
-                      variant="subtle" 
-                      color="blue"
-                      onClick={() => handleEdit(row, rowIndex)}
-                    >
-                      <IconEdit size={16} />
-                    </ActionIcon>
-                    {isRowActive(row) ? (
+                {!hideActions && (
+                  <Table.Td className={classes.actionsCell}>
+                    <Group gap="sm" className={classes.actionsGroup}>
                       <ActionIcon 
                         variant="subtle" 
-                        color="red"
-                        onClick={() => handleToggleStatus(row, rowIndex)}
-                        title="Desativar"
+                        color="blue"
+                        onClick={() => handleEdit(row, rowIndex)}
                       >
-                        <IconTrash size={16} />
+                        <IconEdit size={16} />
                       </ActionIcon>
-                    ) : (
-                      <ActionIcon 
-                        variant="subtle" 
-                        color="green"
-                        onClick={() => handleToggleStatus(row, rowIndex)}
-                        title="Ativar"
-                      >
-                        <IconCheck size={16} />
-                      </ActionIcon>
-                    )}
-                  </Group>
-                </Table.Td>
+                      {isRowActive(row) ? (
+                        <ActionIcon 
+                          variant="subtle" 
+                          color="red"
+                          onClick={() => handleToggleStatus(row, rowIndex)}
+                          title="Desativar"
+                        >
+                          <IconTrash size={16} />
+                        </ActionIcon>
+                      ) : (
+                        <ActionIcon 
+                          variant="subtle" 
+                          color="green"
+                          onClick={() => handleToggleStatus(row, rowIndex)}
+                          title="Ativar"
+                        >
+                          <IconCheck size={16} />
+                        </ActionIcon>
+                      )}
+                    </Group>
+                  </Table.Td>
+                )}
               </Table.Tr>
             ))}
           </Table.Tbody>

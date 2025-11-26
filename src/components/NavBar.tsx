@@ -10,25 +10,35 @@ import { LinksGroup } from './NavbarLinksGroup';
 import classes from '../styles/NavBar.module.css';
 import { UserInfo } from './UserInfo';
 import logoCCF from '../assets/img/LogoCCF3.png';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useMediaQuery } from '@mantine/hooks';
 import { logoutService } from '../services/authService';
+import { usePermissions } from '../hooks/usePermissions';
+import type { UserRole } from '../types/permissions';
 
+interface NavItem {
+  label: string;
+  icon: React.FC<any>;
+  link?: string;
+  initiallyOpened?: boolean;
+  links?: { label: string; link: string; allowedRoles?: UserRole[] }[];
+  allowedRoles?: UserRole[];
+}
 
-
-const mockdata = [
-  { label: 'Ocorrencias', icon: IconNotes, link: '/Ocorrencia'  },
-  { label: 'Relatórios', icon: IconFileAnalytics, link: 'administracao/Relatorios' },
-  { label: 'Dashboard', icon: IconGauge, link: '/dashboard' },
+const allNavItems: NavItem[] = [
+  { label: 'Ocorrencias', icon: IconNotes, link: '/Ocorrencia' },
+  { label: 'Relatórios', icon: IconFileAnalytics, link: 'administracao/Relatorios', allowedRoles: ['ADMINISTRADOR', 'OBSERVADOR'] },
+  { label: 'Dashboard', icon: IconGauge, link: '/dashboard', allowedRoles: ['ADMINISTRADOR', 'OBSERVADOR'] },
   {
     label: 'Administração',
     icon: IconNotes,
     initiallyOpened: true,
+    allowedRoles: ['ADMINISTRADOR', 'OBSERVADOR'],
     links: [
-      { label: 'Batalhão', link: '/administracao/Batalhao' },
-      { label: 'Veículos', link: '/administracao/Veiculo' },
-      { label: 'Usuários', link: '/administracao/Users' },
+      { label: 'Batalhão', link: '/administracao/Batalhao', allowedRoles: ['ADMINISTRADOR', 'OBSERVADOR'] },
+      { label: 'Veículos', link: '/administracao/Veiculo', allowedRoles: ['ADMINISTRADOR', 'OBSERVADOR'] },
+      { label: 'Usuários', link: '/administracao/Users', allowedRoles: ['ADMINISTRADOR', 'OBSERVADOR'] },
     ],
   },
 ];
@@ -37,7 +47,38 @@ export function NavBar2() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 768px)');
-  const links = mockdata.map((item) => <LinksGroup {...item} key={item.label} onClick={() => isMobile && setIsOpen(false)} />);
+  const { userRoles } = usePermissions();
+
+  const filteredNavItems = useMemo(() => {
+    // Função local para verificar roles
+    const checkRoles = (allowedRoles?: UserRole[]): boolean => {
+      // Se não tem restrição de role, permite acesso
+      if (!allowedRoles) return true;
+      // Se o usuário ainda não foi carregado, mostra todos os itens
+      if (userRoles.length === 0) return true;
+      // Verifica se o usuário tem alguma das roles permitidas
+      return allowedRoles.some(role => userRoles.includes(role));
+    };
+
+    return allNavItems
+      .filter((item) => checkRoles(item.allowedRoles))
+      .map((item) => {
+        // Filtra também os sublinks
+        if (item.links) {
+          return {
+            ...item,
+            links: item.links.filter((link) => checkRoles(link.allowedRoles)),
+          };
+        }
+        return item;
+      })
+      // Remove itens de menu que ficaram sem sublinks
+      .filter((item) => !item.links || item.links.length > 0);
+  }, [userRoles]);
+
+  const links = filteredNavItems.map((item) => (
+    <LinksGroup {...item} key={item.label} onClick={() => isMobile && setIsOpen(false)} />
+  ));
 
   // Fecha o menu ao redimensionar para desktop
   useEffect(() => {
