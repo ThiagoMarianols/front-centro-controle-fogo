@@ -31,7 +31,6 @@ const mockdata = [
       { label: 'Usuários', link: '/administracao/Users' },
     ],
   },
-  { label: 'Configurações', icon: IconAdjustments },
 ];
 
 export function NavBar2() {
